@@ -1,0 +1,19 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "synkrip",
+  "outputfilename": "synkrip",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "Cuniolo Raffaele",
+    "email": "raffaelecuniolo@gmail.com"
+  },
+  "info": {
+    "companyName": "raffaelecuniolo",
+    "productName": "SynkRip",
+    "productVersion": "1.0.0 BETA",
+    "compilationDate": "2024-04-26"
+  }
+}

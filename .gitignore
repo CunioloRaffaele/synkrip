@@ -1,0 +1,6 @@
+build
+node_modules
+frontend/dist
+.vscode
+platformBinary
+**/.DS_Store

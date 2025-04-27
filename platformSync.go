@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"log"
 	"synkrip/api/spotify"
 	"synkrip/api/youtube"
+	"synkrip/fsHandler"
 )
 
 func (a *App) updatePlaylistDb() error {
@@ -52,11 +54,14 @@ func (a *App) updatePlaylistDb() error {
                 if !songIdsInSpotify[song.SONG_PLATFORM_ID] {
                     log.Printf("Removing song '%s' from playlist '%s' as it is no longer in Spotify\n", song.SONG_NAME, pl.DIR_ID)
                     doneSomething = true
-                    err := a.CurrentDB.RemoveSongFromPlaylist(pl.DIR_ID, song.SONG_PLATFORM_ID)
+                    var err error
+                    err = a.CurrentDB.RemoveSongFromPlaylist(pl.DIR_ID, song.SONG_PLATFORM_ID)
+                    err = fsHandler.RemoveSongFile(a.LibPath, pl.DIR_ID, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME + ".m4a")
                     if err != nil {
                         log.Printf("Error removing song '%s' from playlist '%s': %v\n", song.SONG_NAME, pl.DIR_ID, err)
                         return err
                     }
+                    
                 }
             }
 
@@ -94,7 +99,7 @@ func (a *App) updatePlaylistDb() error {
     return nil
 }
 
-func (a *App) downloadContent(playlistName string) {
+func (a *App) downloadContent(ctx context.Context, playlistName string) {
     // Get all songs in the playlist
     songs, err := a.CurrentDB.GetSongs(playlistName)
     if err != nil {
@@ -106,11 +111,20 @@ func (a *App) downloadContent(playlistName string) {
 
     // Iterate through each song and download it
     for index, song := range songs {
+        // Check if the context is canceled
+        select {
+        case <-ctx.Done():
+            log.Println("Download canceled for playlist:", playlistName)
+            a.setDownloadStatus("", false, 0, 0)
+            return
+        default:
+            // Continue if not canceled
+        }
         a.setDownloadStatus("Downloading...", true, index, len(songs))
         if song.IS_DOWNLOADED == 0 {
             log.Printf("Downloading song '%s' from playlist '%s'\n", song.SONG_NAME, playlistName)
             a.CurrentDB.MarkSongAsDownloaded(song.DIR_ID, song.SONG_YT_ID)
-            a.DownloadVideo(song.SONG_YT_ID, a.LibPath+"/"+playlistName)
+            a.DownloadVideo(song.SONG_YT_ID, a.LibPath+"/"+playlistName, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME)
         }
     }
     log.Println("Download completed for playlist:", playlistName)

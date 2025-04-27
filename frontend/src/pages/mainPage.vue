@@ -1,6 +1,6 @@
 <template>
   <FloatingDownloadStatusAndCancel :downloadText=downloadTxt :isVisible="isDownloadVisible" :showDetails=true
-    :currentItem="downloadCurrentItem" :totalItems="downloadTotalItems" />
+    :currentItem="downloadCurrentItem" :totalItems="downloadTotalItems" @cancel-download="StopSync()" />
   <FloatingActionButton :color="fabColor" :initial-active="fabActive" @toggle="handleFabToggle" />
   <FloatingTextBox :is-visible="fabActive" title="Add New Playlist" placeholder="Enter public playlist url"
     submit-button-text="Add" @submit="handleSubmit" />
@@ -9,7 +9,7 @@
       :style="{ '--index': index }">
       <PlaylistCover :image="playlist.image" :title="playlist.dir_id"
         :songs="playlist.songs.map(song => ({ name: song.song_name, downloaded: song.is_downloaded === 1 }))"
-        :needsSync="playlist.toBeSynced" @sync-clicked="handleSync"/>
+        :needsSync="playlist.toBeSynced" @sync-clicked="handleSync" />
     </div>
   </transition-group>
 </template>
@@ -20,7 +20,7 @@ import FloatingTextBox from '../components/floatingTextBox.vue';
 import PlaylistCover from '../components/playlistCover.vue';
 import FloatingDownloadStatusAndCancel from '../components/floatingDownloadStatus.vue';
 
-import { GetDB, AddEntry, SyncPlaylist } from '../../wailsjs/go/main/App.js';
+import { GetDB, AddEntry, SyncPlaylist, StopSync } from '../../wailsjs/go/main/App.js';
 import { EventsOn } from '../../wailsjs/runtime/runtime'
 
 export default {
@@ -77,6 +77,15 @@ export default {
         })
         .catch((error) => {
           console.error('Error syncing playlist:', error);
+        });
+    },
+    StopSync() {
+      StopSync() // Call the imported StopSync function
+        .then(() => {
+          console.log("Sync process stopped successfully.");
+        })
+        .catch((error) => {
+          console.error("Error stopping sync process:", error);
         });
     },
     updateDownloadStatus(text, isVisible, currentItem, totalItems) {

@@ -15,6 +15,7 @@ type App struct {
 	LibPath    string   							// Path to music library
 	CurrentDB *dbHandler.Database					// Current database handler
 	CurrentFileSystem *fsHandler.FileSystem			// Current file system struct
+	cancelFunc context.CancelFunc					// Cancel function for download
 }
 
 // NewApp creates a new App application struct
@@ -50,6 +51,7 @@ func (a *App) GetDB() (string, error) {
 // AddPlaylistEntry
 func (a *App) AddEntry(url string, service string) error {
 	// TODO make this work in a goroutine
+	// TODO verify if the playlist already exists
 	a.setDownloadStatus("Adding Playlist", true, 1, 1)
 	switch service {
 	case "Spotify":
@@ -75,9 +77,29 @@ func (a *App) AddEntry(url string, service string) error {
 func (a *App) SyncPlaylist(name string) error {
 	// Start the downloadContent function in a Go routine
 	// TODO: Handle errors properly
+
+	// Cancel any ongoing download if it exists
+    if a.cancelFunc != nil {
+        a.cancelFunc()
+    }
+
+    // Create a new context with cancellation
+    ctx, cancel := context.WithCancel(context.Background())
+    a.cancelFunc = cancel
     go func() {
-        a.downloadContent(name)
+        a.downloadContent(ctx, name)
     }()
     // Return immediately since the operation is running in the background
     return nil
+}
+
+func (a *App) StopSync() {
+    if a.cancelFunc != nil {
+        a.cancelFunc()
+        log.Println("Sync process stopped.")
+		a.setDownloadStatus("Cancelling...", true, 1, 1)
+        a.cancelFunc = nil // Reset the cancel function
+    } else {
+        log.Println("No active sync to stop.")
+    }
 }

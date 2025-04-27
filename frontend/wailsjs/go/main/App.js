@@ -6,12 +6,16 @@ export function AddEntry(arg1, arg2) {
   return window['go']['main']['App']['AddEntry'](arg1, arg2);
 }
 
-export function DownloadVideo(arg1, arg2) {
-  return window['go']['main']['App']['DownloadVideo'](arg1, arg2);
+export function DownloadVideo(arg1, arg2, arg3) {
+  return window['go']['main']['App']['DownloadVideo'](arg1, arg2, arg3);
 }
 
 export function GetDB() {
   return window['go']['main']['App']['GetDB']();
+}
+
+export function StopSync() {
+  return window['go']['main']['App']['StopSync']();
 }
 
 export function SyncPlaylist(arg1) {

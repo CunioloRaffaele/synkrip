@@ -6,8 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"synkrip/fsHandler"
-
-	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 var (
@@ -69,7 +67,7 @@ func externalFrameworksInit() {
 
 
 // DownloadVideo downloads a video using yt-dlp without blocking the main thread
-func (a *App) DownloadVideo(url, outputDir string) {
+func (a *App) DownloadVideo(url string, outputDir string, title string) {
     log.Printf("Starting download from URL: %s to directory: %s", url, outputDir)
 
         // Set up command with options for audio extraction
@@ -78,9 +76,9 @@ func (a *App) DownloadVideo(url, outputDir string) {
             "--extract-audio",
             "--audio-format", "m4a",
             "--audio-quality", "0", // 0 is best
-            "--output", filepath.Join(outputDir, "%(title)s.%(ext)s"),
+            "--output", filepath.Join(outputDir, title + ".m4a"),
 			"--embed-thumbnail",
-			"--write-thumbnail",
+			/*"--write-thumbnail",*/
 			"--ffmpeg-location", ffmpegPath,
             /*"--progress-template", "download:%(progress.downloaded_bytes)s/%(progress.total_bytes)s",*/
             url,
@@ -92,19 +90,11 @@ func (a *App) DownloadVideo(url, outputDir string) {
         // Start the command
         if err := cmd.Run(); err != nil {
             log.Printf("Error starting yt-dlp: %v", err)
-            rt.EventsEmit(a.ctx, "updateDownloadProgress", map[string]interface{}{
-                "isVisible": false,
-            })
             return
         }
 
         // Wait for command to finish
         _ = cmd.Wait()
-        
-        // Command completed - hide download status
-        rt.EventsEmit(a.ctx, "updateDownloadProgress", map[string]interface{}{
-            "isVisible": false,
-        })
 
         log.Println("Download completed successfully")
 }

@@ -16,13 +16,18 @@
 1. **Download the App**:
     - Visit the [Releases Page](https://github.com/CunioloRaffaele/synkrip/releases) to download the latest version
 
-2. **Launch SynkRip**:
-    - Open the app and start managing your music library
+2. **Install the App**:
+    - **macOS**: Drag and drop SynkRip into your Applications folder from the mounted DMG
+    - **Windows**: Run the installer and follow the simple setup wizard
+
+3. **Launch SynkRip**:
+    - Open the app from your Applications folder (macOS) or Start Menu (Windows)
+    > **Warning for macOS users**: When launching for the first time, you may encounter an "unknown developer" warning. Right-click the app and select "Open" to bypass this warning, or adjust your security settings in System Preferences.
 
 ## Usage
 
 - **Create a New Library**: Set up a new music library and add playlists that need to be synchronized.
-- **Open an Existing Library**: Load a previously created library
+- **Open an Existing Library**: Load a previously created library and manage its contents.
 
 ## Disclaimers
 

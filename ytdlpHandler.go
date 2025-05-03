@@ -88,6 +88,7 @@ func (a *App) DownloadVideo(url string, outputDir string, title string) {
         cmd.Stderr = log.Writer()
 
         // Start the command
+        log.Printf("Starting YTDLP running command: %v", cmd.Args)
         if err := cmd.Run(); err != nil {
             log.Printf("Error starting yt-dlp: %v", err)
             return

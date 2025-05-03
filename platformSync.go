@@ -40,9 +40,11 @@ func (a *App) updatePlaylistDb() error {
         switch pl.SERVICE {
         case "Spotify":
             // Fetch the latest playlist data from Spotify
-            spotifyPlaylist, _, _ := spotify.IngestSpotifyPlaylist(pl.URL)
+            spotifyPlaylist, _, image := spotify.IngestSpotifyPlaylist(pl.URL)
             //TODO: Handle error properly
 
+            // update the playlist image in the database
+            err = a.CurrentDB.UpdateImage(pl.DIR_ID, image)
             // Create a map of song IDs in the Spotify playlist
             songIdsInSpotify := make(map[string]bool)
             for _, item := range spotifyPlaylist.Items {

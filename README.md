@@ -5,9 +5,9 @@
 ## Features
 
 - **Automatic Library Management**:<br>Create, open, and scan music libraries for better organization, with automatic synchronization between online playlists and local folders
-- **Spotify donwload and sync**:<br>Fetch playlists and synchronize them with your local library
-- **YouTube Music donwload and sync**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Fetch playlists and synchronize them with your local library 
-- **SoundCloud donwload and sync**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Fetch playlists and synchronize them with your local library
+- **Spotify download and sync**:<br>Fetch playlists and synchronize them with your local library
+- **YouTube Music download and sync**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Fetch playlists and synchronize them with your local library 
+- **SoundCloud download and sync**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Fetch playlists and synchronize them with your local library
 - **Cross-Platform Support**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Works on macOS and Windows
 - **User-Friendly Experience**:<br>Unlike command-line tools, SynkRip offers an intuitive graphical interface that makes music library management accessible to everyone
 
@@ -25,7 +25,7 @@
 3. 🚀  **Launch SynkRip**:
     - Open the app from your Applications folder (macOS) or Start Menu (Windows)
     <br>
-    > ⚠️  **Warning for macOS users**: 
+     ⚠️  **Warning for macOS users**: 
     <br>When launching for the first time, you may encounter an "unknown developer" warning. Right-click the app and select "Open" to bypass this warning, or adjust your security settings in System Preferences.
     <br>This happens even if the app is signed since macOS requires apps to be notarized by Apple to bypass the "unknown developer" warning.
 

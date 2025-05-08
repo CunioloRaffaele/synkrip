@@ -1,6 +1,18 @@
 # SynkRip
 
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/4eb26b8f-49b0-4d4a-a252-b6ba33b09c96" alt="SynkRip logo" width="300">
+</p>
+
 #### A powerful desktop application that seamlessly syncs and manages your music libraries from multiple platforms and services. 🎵 ✨
+
+![OS](https://img.shields.io/badge/OS-MacOs-cyan?style=for-the-badge)
+![language](https://img.shields.io/badge/lang-go-blueviolet?style=for-the-badge)
+![License](https://img.shields.io/github/license/CunioloRaffaele/synkrip?style=for-the-badge)
+<br>
+![LastCommit](https://img.shields.io/github/last-commit/CunioloRaffaele/synkrip/main)
+![Commits](https://img.shields.io/github/commit-activity/w/CunioloRaffaele/synkrip)
+![Issues](https://img.shields.io/bitbucket/issues/CunioloRaffaele/synkrip?color=yellow)
 
 ## Features
 

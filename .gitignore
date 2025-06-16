@@ -2,5 +2,7 @@ build
 node_modules
 frontend/dist
 .vscode
-platformBinary
+platformBinary/*
+!platformBinary/readme.md
 **/.DS_Store
+synkripRepo.code-workspace

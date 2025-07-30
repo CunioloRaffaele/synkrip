@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"os"
 	"synkrip/fsHandler"
@@ -27,8 +28,12 @@ func loggerSetup () {
     }
     //defer logFile.Close()
 
-    // Set log out put and enjoy :)
-    log.SetOutput(logFile)
+    // Combine log outputs: terminal and log file
+    multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+    // Set log output to both terminal and file
+    log.SetOutput(multiWriter)
+
 
     // optional: log date-time, filename, and line number
     log.SetFlags(log.Lshortfile | log.LstdFlags)

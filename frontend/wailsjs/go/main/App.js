@@ -14,6 +14,14 @@ export function GetDB() {
   return window['go']['main']['App']['GetDB']();
 }
 
+export function GetSettings() {
+  return window['go']['main']['App']['GetSettings']();
+}
+
+export function OpenLibrary(arg1) {
+  return window['go']['main']['App']['OpenLibrary'](arg1);
+}
+
 export function StopSync() {
   return window['go']['main']['App']['StopSync']();
 }

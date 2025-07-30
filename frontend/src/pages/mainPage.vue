@@ -9,13 +9,14 @@
       :style="{ '--index': index }">
       <PlaylistCover :image="playlist.image" :title="playlist.dir_id"
         :songs="playlist.songs.map(song => ({ name: song.song_name, downloaded: song.is_downloaded === 1 }))"
-        :needsSync="playlist.toBeSynced" @sync-clicked="handleSync" />
+        :needsSync="playlist.toBeSynced" @sync-clicked="handleSync" 
+        :service="playlist.service" />
     </div>
   </transition-group>
 </template>
 
 <script>
-import FloatingActionButton from '../components/addButton.vue';
+import FloatingActionButton from '../components/addButton.vue';  
 import FloatingTextBox from '../components/floatingTextBox.vue';
 import PlaylistCover from '../components/playlistCover.vue';
 import FloatingDownloadStatusAndCancel from '../components/floatingDownloadStatus.vue';

@@ -7,6 +7,10 @@ export function DownloadVideo(arg1:string,arg2:string,arg3:string):Promise<void>
 
 export function GetDB():Promise<string>;
 
+export function GetSettings():Promise<string>;
+
+export function OpenLibrary(arg1:string):Promise<void>;
+
 export function StopSync():Promise<void>;
 
 export function SyncPlaylist(arg1:string):Promise<void>;

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"synkrip/api/spotify"
 	"synkrip/api/youtube"
@@ -15,6 +16,7 @@ type App struct {
 	LibPath    string   							// Path to music library
 	CurrentDB *dbHandler.Database					// Current database handler
 	CurrentFileSystem *fsHandler.FileSystem			// Current file system struct
+	Settings *Settings								// Settings struct
 	cancelFunc context.CancelFunc					// Cancel function for download
 }
 
@@ -31,6 +33,7 @@ func (a *App) startup(ctx context.Context) {
 	loggerSetup()
 	checkForUpdate(a)
 	externalFrameworksInit()
+	a.Settings, _ = GetSettings()
 	//spotify.SpotifyTets()
 	//youtube.YoutubeTest()
 }
@@ -102,4 +105,22 @@ func (a *App) StopSync() {
     } else {
         log.Println("No active sync to stop.")
     }
+}
+
+func (a *App) GetSettings() string {
+    settingsJSON, err := json.Marshal(a.Settings)
+    if err != nil {
+        log.Println("Failed to marshal settings:", err)
+        return "{}" // Return empty JSON object on error
+    }
+    return string(settingsJSON)
+}
+
+func (a *App) OpenLibrary(newLib string) error {
+	err := fsHandler.OpenLibrary(a.ctx, &a.LibPath, &a.CurrentDB, a.CurrentFileSystem, newLib)
+	if err != nil {
+		log.Println("Failed to open library:", err.Error())
+		return err
+	}
+	return nil
 }

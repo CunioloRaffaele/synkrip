@@ -60,7 +60,7 @@ export default {
     data() {
         return {
             inputText: '',
-            options: ['Spotify'/*, 'SoundCloud', 'YouTube'*/],
+            options: ['Spotify'/*, 'SoundCloud'*/, 'YouTube'],
             selectedOption: 'Spotify' // Default selection
         }
     },
@@ -141,6 +141,14 @@ export default {
 .selection-option:hover {
     background: rgba(255, 255, 255, 0.1);
     color: white;
+    transform: scale(1.03);
+
+}
+
+.selection-option:active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: scale(0.98);
 }
 
 .selection-option.active {
@@ -205,15 +213,15 @@ export default {
 }
 
 .submit:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     background-color: #ffffff;
+    scale: 1.02;
 }
 
 .submit:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: #f5f5f5;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.686);
+    background-color: #8c7d7d;
+    scale: 0.98;
 }
 
 /* Semi-transparent overlay */

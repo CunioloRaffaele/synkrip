@@ -2,20 +2,12 @@ package main
 
 import (
 	"embed"
-	"log"
-	"runtime"
-	"strings"
-
-	"synkrip/dbHandler"
-	"synkrip/fsHandler"
 
 	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/menu"
-	"github.com/wailsapp/wails/v2/pkg/menu/keys"
+
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
-	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 //go:embed all:frontend/dist
@@ -38,113 +30,10 @@ func main() {
 	// Create an instance of the App struct
     app := NewApp()
 
-	AppMenu := menu.NewMenu()
-    if runtime.GOOS == "darwin" {
-        AppMenu.Append(menu.AppMenu()) // On macOS platform, this must be done right after `NewMenu()`
-    }
-    FileMenu := AppMenu.AddSubmenu("File")
-	FileMenu.AddText("Check for app updates", nil, func(_ *menu.CallbackData) {
-		checkForUpdate(app)
-    })
-	FileMenu.AddText("View open source libs", nil, func(_ *menu.CallbackData) {
-		rt.EventsEmit(app.ctx, "osLib")
-    })
-    FileMenu.AddSeparator()
-    FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-        rt.Quit(app.ctx)
-    })
-	LibraryMenu := AppMenu.AddSubmenu("Library")
-	LibraryMenu.AddText("Open Library", keys.CmdOrCtrl("l"), func(_ *menu.CallbackData) {
-		var err error
-		app.LibPath, err = rt.OpenDirectoryDialog(app.ctx, rt.OpenDialogOptions{})
-		if err != nil{
-			println("Error selecting directory:", err.Error())
-		} else if (len(app.LibPath) > 0){
-			folderName := app.LibPath[strings.LastIndex(app.LibPath, "/")+1:]
-			log.Println("Selected folder: " + folderName)
-			rt.WindowSetTitle(app.ctx,"SynkRip - " + folderName)
-			var errDb error
-			app.CurrentDB, errDb = dbHandler.Connect(app.LibPath)
-			if errDb != nil {
-				rt.MessageDialog(app.ctx, rt.MessageDialogOptions{
-				Type:          rt.WarningDialog,
-				Title:         "Error",
-				Message:       "Failed to open library:\n" + errDb.Error(),
-				})
-			} else {
-				fsErr := fsHandler.ScanLibrary(app.LibPath, app.CurrentFileSystem)
-				log.Println("Library scan complete. File system:", app.CurrentFileSystem)
-				if fsErr != nil {
-					rt.MessageDialog(app.ctx, rt.MessageDialogOptions{
-					Type:          rt.WarningDialog,
-					Title:         "Error",
-					Message:       "Failed to scan library:\n" + fsErr.Error(),
-					})
-				} else {
-					rt.EventsEmit(app.ctx, "LibSelected")
-					app.updatePlaylistDb()
-				}
-			}
-		}
-	})
-	LibraryMenu.AddText("Create New Library", keys.CmdOrCtrl("a"), func(_ *menu.CallbackData) {
-		var err error
-		app.LibPath, err = rt.OpenDirectoryDialog(app.ctx, rt.OpenDialogOptions{})
-		if err != nil{
-			println("Error selecting directory:", err.Error())
-		} else if (len(app.LibPath) > 0){
-			folderName := app.LibPath[strings.LastIndex(app.LibPath, "/")+1:]
-			log.Println("Selected folder: " + folderName)
-			rt.WindowSetTitle(app.ctx,"SynkRip - " + folderName)
-			err := dbHandler.CreateDatabase(app.LibPath)
-			if err != nil {
-				rt.MessageDialog(app.ctx, rt.MessageDialogOptions{
-				Type:          rt.WarningDialog,
-				Title:         "Error",
-				Message:       "Failed to create library:\n" + err.Error(),
-				})
-			}
-			var errDb error
-			app.CurrentDB, errDb = dbHandler.Connect(app.LibPath)
-			if errDb != nil {
-				println("Error connecting to database:", errDb.Error())
-			} else {
-				app.CurrentDB.Setup()
-				rt.EventsEmit(app.ctx, "LibSelected")
-			}
-		}
-	})
-	/*LibraryMenu.AddText("Scan", keys.CmdOrCtrl("s"), func(_ *menu.CallbackData) {
-		if app.LibPath != "" {
-			fsErr := fsHandler.ScanLibrary(app.LibPath, app.CurrentFileSystem)
-			if fsErr != nil {
-				rt.MessageDialog(app.ctx, rt.MessageDialogOptions{
-				Type:          rt.WarningDialog,
-				Title:         "Error",
-				Message:       "Failed to scan library:\n" + fsErr.Error(),
-				})
-			} else {
-				rt.EventsEmit(app.ctx, "LibSelected")
-			}
-		} else {
-			rt.MessageDialog(app.ctx, rt.MessageDialogOptions{
-			Type:          rt.WarningDialog,
-			Title:         "Error",
-			Message:       "No library selected.",
-			})
-		}
-	
-	})*/
-
-
-    if runtime.GOOS == "darwin" {
-    AppMenu.Append(menu.EditMenu())  // On macOS platform, EditMenu should be appended to enable Cmd+C, Cmd+V, Cmd+Z... shortcuts
-    }
-
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "synkrip APP",
-		Menu: AppMenu, 
+		Menu: createAppMenu(app),
 		Width:  1024,
 		Height: 768,
 		/*MinWidth: 1024,

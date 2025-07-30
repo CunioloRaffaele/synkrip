@@ -1,14 +1,24 @@
 <template>
-    <div class="playlist-entry" :style="{ backgroundImage: `url(${image})` }" :class="{ 'needs-sync': needsSync }">
+    <div class="playlist-entry" :style="{ backgroundImage: `url(${image})` }" :class="{ 'needs-sync': needsSync }"
+        @click="toggleSelection">
+        <!-- Frosted Glass Overlay -->
+        <div v-if="isSelected" class="frosted-overlay"></div>
+
         <div class="blur-overlay"></div>
         <div class="sync-indicator" v-if="needsSync"></div>
         <div class="content-wrapper">
             <div class="playlist-image-container">
                 <img :src="image" alt="Playlist Cover" class="playlist-image" />
+                <!-- Service image overlay -->
+                <img 
+                    :src="(`/src/assets/images/${service}.png`)" 
+                    alt="Service Icon" 
+                    class="service-icon" 
+                />
                 <!-- Add sync icon overlay -->
                 <div class="sync-icon" v-if="needsSync" @click="sync">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                        <path fill="#FFFFFF"
+                        <path fill="#000000"
                             d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
                     </svg>
                 </div>
@@ -16,11 +26,11 @@
             <div class="playlist-info">
                 <div class="playlist-title">{{ title }}</div>
                 <div class="song-list-container">
-                <ul class="song-list">
-                    <li v-for="(song, index) in songs" :key="index" class="song-item"
-                        :class="{ 'not-downloaded': !song.downloaded }">
-                        {{ song.name }}
-                    </li>
+                    <ul class="song-list">
+                        <li v-for="(song, index) in songs" :key="index" class="song-item"
+                            :class="{ ' not-downloaded': !song.downloaded }">
+                {{ song.name }}
+                </li>
                 </ul>
             </div>
         </div>
@@ -52,6 +62,15 @@ export default {
             type: Boolean,
             required: true,
         },
+        service: {
+            type: String,
+            default: 'unknown', // Default to 'unknown' if not provided
+        },
+    },
+    data() {
+        return {
+            isSelected: false,
+        };
     },
     mounted() {
         //console.log("needsSync value:", this.needsSync);
@@ -60,6 +79,10 @@ export default {
         sync() {
             // Emit an event to the parent with the playlist title or ID
             this.$emit('sync-clicked', this.title);
+        },
+        toggleSelection() {
+            this.isSelected = !this.isSelected;
+            console.log("Selected:", this.isSelected);
         },
     },
 };
@@ -80,6 +103,19 @@ export default {
     height: 180px;
     background-size: cover;
     background-position: center;
+    transition: all 0.3s ease-in-out;
+}
+
+.playlist-entry:hover {
+    box-shadow: 0 0 10px 3px rgba(255, 255, 255, 0.1);
+    filter: brightness(1.15);
+    transform: scale(1.03);
+}
+
+.playlist-entry:active {
+    filter: brightness(0.9);
+    transform: scale(0.98);
+    transition: all 0.2s ease-in-out;
 }
 
 .needs-sync::before {
@@ -128,6 +164,17 @@ export default {
     z-index: 1;
 }
 
+.frosted-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    backdrop-filter: blur(20px) brightness(1.2);
+    -webkit-backdrop-filter: blur(20px) brightness(1.2);
+    z-index: 1000;
+}
+
 .sync-indicator {
     position: absolute;
     top: 0;
@@ -153,6 +200,12 @@ export default {
     height: 150px;
     margin-right: 16px;
     flex-shrink: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.playlist-image-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .playlist-image {
@@ -161,6 +214,18 @@ export default {
     object-fit: cover;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.service-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
 .sync-icon {
@@ -178,10 +243,11 @@ export default {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     z-index: 5;
     animation: sync-rotate 2s linear infinite;
+    transition: all 0.3s ease-in-out;
 }
 
-.sync-icon :active {
-    transform: scale(0.80);
+.sync-icon:hover {
+    scale: 1.15;
 }
 
 .playlist-info {
@@ -204,6 +270,7 @@ export default {
     /* Prevent text from wrapping */
     overflow: hidden;
     text-overflow: ellipsis;
+    justify-content: center;
 }
 
 .song-list-container {

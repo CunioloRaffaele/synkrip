@@ -1,5 +1,5 @@
 <template>
-    <div class="myLanding" :class="{ 'exit-animation': isExiting }">
+    <div class="landing-page" :class="{ 'exit-animation': isExiting }">
         <div class="animated-background" :class="{ 'fade-out': isExiting }"></div>
         <div class="content" :class="{ 'content-exit': isExiting }">
             <h1 :class="{ 'fade-out': isExiting }">Welcome to SynkRip</h1>
@@ -7,16 +7,16 @@
         </div>
 
         <!-- Recently Used Libraries Box -->
-        <div class="recent-libraries" v-if="recentLibraries.length > 0">
+        <transition-group name="fade" tag="div" class="recent-libraries" v-if="recentLibraries.length > 0">
             <h2>Recently Used Libraries</h2>
             <ul>
-                <li v-for="(library) in recentLibraries" :key="library">
+                <li v-for="(library, index) in recentLibraries" :key="library" class="library-item">
                     <button @click="openLibrary(library)">{{ library.split('/').pop() }}</button>
                 </li>
             </ul>
-        </div>
+        </transition-group>
 
-        <div class="myFooter" :class="{ 'fade-out': isExiting }">
+        <div class="footer" :class="{ 'fade-out': isExiting }">
             <p>Created with ❤️ by Cuniolo Raffaele</p>
             <a href="https://github.com/CunioloRaffaele" target="_blank">
                 Open sourced project at GitHub
@@ -82,7 +82,8 @@ function openLibrary(library) {
 </script>
 
 <style scoped>
-.myLanding {
+/* General layout */
+.landing-page {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -96,23 +97,20 @@ function openLibrary(library) {
     box-sizing: border-box;
 }
 
-.exit-animation {
-    transform: scale(1.1);
-    opacity: 0;
-}
-
+/* Animated background */
 .animated-background {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #6B8DD6 50%, #8E37D7 75%, #667eea 100%);
+    /*background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #6B8DD6 50%, #8E37D7 75%, #667eea 100%);
     background-size: 400% 400%;
     animation: gradientAnimation 15s ease infinite;
-    z-index: -1;
+    z-index: -1;*/
 }
 
+/* Content styling */
 .content {
     position: relative;
     z-index: 1;
@@ -130,6 +128,7 @@ function openLibrary(library) {
     margin-bottom: 2rem;
 }
 
+/* Recently Used Libraries */
 .recent-libraries {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 12px;
@@ -153,8 +152,11 @@ function openLibrary(library) {
     margin: 0;
 }
 
-.recent-libraries li {
+.library-item {
     margin: 0.5rem 0;
+    animation: fadeIn 0.5s ease forwards;
+    animation-delay: calc(var(--index) * 0.2s);
+    opacity: 0;
 }
 
 .recent-libraries button {
@@ -163,18 +165,27 @@ function openLibrary(library) {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    background-color: #6b8dd6;
-    color: white;
+    background-color: #000000;
+    color: rgba(255, 255, 255, 0.827);
     transition: background-color 0.3s ease, transform 0.2s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .recent-libraries button:hover {
-    background-color: #8e37d7;
-    transform: scale(1.05);
+    box-shadow: 0 0 10px 3px rgba(255, 255, 255, 0.1);
+    filter: brightness(1.15);
+    transform: scale(1.08);
+    color: white;
 }
 
-.myFooter {
+.recent-libraries button:active {
+    filter: brightness(0.9);
+    transform: scale(0.98);
+    transition: all 0.2s ease-in-out;
+}
+
+/* Footer styling */
+.footer {
     text-align: center;
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.8);
@@ -182,17 +193,18 @@ function openLibrary(library) {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.myFooter a {
+.footer a {
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s ease;
 }
 
-.myFooter a:hover {
+.footer a:hover {
     color: #feb47b;
 }
 
+/* Animations */
 @keyframes gradientAnimation {
     0% {
         background-position: 0% 50%;
@@ -202,6 +214,17 @@ function openLibrary(library) {
     }
     100% {
         background-position: 0% 50%;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>

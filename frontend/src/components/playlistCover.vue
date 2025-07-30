@@ -10,11 +10,7 @@
             <div class="playlist-image-container">
                 <img :src="image" alt="Playlist Cover" class="playlist-image" />
                 <!-- Service image overlay -->
-                <img 
-                    :src="(`/src/assets/images/${service}.png`)" 
-                    alt="Service Icon" 
-                    class="service-icon" 
-                />
+                <img :src="getServiceIcon(service)" alt="Service Icon" class="service-icon" />
                 <!-- Add sync icon overlay -->
                 <div class="sync-icon" v-if="needsSync" @click="sync">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
@@ -29,12 +25,12 @@
                     <ul class="song-list">
                         <li v-for="(song, index) in songs" :key="index" class="song-item"
                             :class="{ ' not-downloaded': !song.downloaded }">
-                {{ song.name }}
-                </li>
-                </ul>
+                            {{ song.name }}
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
     </div>
 </template>
 
@@ -83,6 +79,10 @@ export default {
         toggleSelection() {
             this.isSelected = !this.isSelected;
             console.log("Selected:", this.isSelected);
+        },
+        getServiceIcon(service) {
+            // Dynamically resolve the service icon path
+            return new URL(`../assets/images/${service}.png`, import.meta.url).href;
         },
     },
 };

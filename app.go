@@ -77,6 +77,16 @@ func (a *App) AddEntry(url string, service string) error {
 	return nil
 }
 
+func (a *App) DeletePlaylist(title string) error {
+	err := a.CurrentDB.RemovePlaylist(title)
+	if err != nil {
+		log.Println("Error deleting playlist:", err)
+		return err
+	}
+	log.Println("Playlist deleted successfully:", title)
+	return nil
+}
+
 func (a *App) SyncPlaylist(name string) error {
 	// Start the downloadContent function in a Go routine
 	// TODO: Handle errors properly

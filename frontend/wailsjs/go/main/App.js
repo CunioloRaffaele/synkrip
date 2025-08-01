@@ -6,6 +6,10 @@ export function AddEntry(arg1, arg2) {
   return window['go']['main']['App']['AddEntry'](arg1, arg2);
 }
 
+export function DeletePlaylist(arg1) {
+  return window['go']['main']['App']['DeletePlaylist'](arg1);
+}
+
 export function DownloadVideo(arg1, arg2, arg3) {
   return window['go']['main']['App']['DownloadVideo'](arg1, arg2, arg3);
 }

@@ -1,8 +1,20 @@
 <template>
     <div class="playlist-entry" :style="{ backgroundImage: `url(${image})` }" :class="{ 'needs-sync': needsSync }"
-        @click="toggleSelection">
+        @contextmenu.prevent="toggleSelection">
         <!-- Frosted Glass Overlay -->
-        <div v-if="isSelected" class="frosted-overlay"></div>
+        <transition name="fade">
+            <div v-if="isSelected" class="frosted-overlay">
+                <!-- Bin Icon -->
+                <div class="delete-icon" @click.stop="deletePlaylist" aria-label="Delete Playlist">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                </div>
+            </div>
+        </transition>
 
         <div class="blur-overlay"></div>
         <div class="sync-indicator" v-if="needsSync"></div>
@@ -35,6 +47,8 @@
 </template>
 
 <script>
+import { DeletePlaylist } from '../../wailsjs/go/main/App';
+
 export default {
     name: "PlaylistCover",
     props: {
@@ -84,6 +98,15 @@ export default {
             // Dynamically resolve the service icon path
             return new URL(`../assets/images/${service}.png`, import.meta.url).href;
         },
+        deletePlaylist() {
+            return DeletePlaylist(this.title)
+                .then((result) => {
+                    console.log("Playlist deleted successfully:", result);
+                })
+                .catch((error) => {
+                    console.error('Error deleting playlists:', error)
+                })
+        },
     },
 };
 </script>
@@ -96,7 +119,7 @@ export default {
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 16px;
+    /*padding: 16px;*/
     width: 100%;
     max-width: 800px;
     margin: 16px auto;
@@ -175,6 +198,23 @@ export default {
     z-index: 1000;
 }
 
+.delete-icon {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    transform: translate(50%, -50%);
+    width: 48px;
+    height: 48px;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1001; /* Ensure it's on top of the overlay */
+}
+
 .sync-indicator {
     position: absolute;
     top: 0;
@@ -192,6 +232,20 @@ export default {
     width: 100%;
     height: 100%;
     align-items: center;
+    padding: 16px;
+}
+
+.content-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* A radial gradient from the right, creating a soft dark bubble */
+    background: radial-gradient(circle at 95% 50%, rgba(0, 0, 0, 0.767) 20%, rgba(0, 0, 0, 0) 60%);
+    z-index: -1; /* Place it behind the wrapper's content (image and text) */
+    pointer-events: none;
 }
 
 .playlist-image-container {
@@ -258,6 +312,7 @@ export default {
     grid-gap: 16px;
     height: 150px;
     color: white;
+    /* The pseudo-element is no longer needed here */
 }
 
 .playlist-title {
@@ -276,10 +331,10 @@ export default {
 .song-list-container {
     position: relative;
     overflow-y: auto;
-    background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
-    backdrop-filter: blur(5px);
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: none;
+    backdrop-filter: none;
+    box-shadow: none;
+    border: none;
     border-radius: 8px;
     padding: 8px;
 }

@@ -3,6 +3,8 @@
 
 export function AddEntry(arg1:string,arg2:string):Promise<void>;
 
+export function DeletePlaylist(arg1:string):Promise<void>;
+
 export function DownloadVideo(arg1:string,arg2:string,arg3:string):Promise<void>;
 
 export function GetDB():Promise<string>;

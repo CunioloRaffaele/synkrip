@@ -108,6 +108,18 @@ func (a *App) StopSync() {
 }
 
 func (a *App) GetSettings() string {
+    // Add a check to prevent a race condition on startup.
+    // If settings haven't been loaded into the struct yet, load them now.
+    if a.Settings == nil {
+        log.Println("Settings were not yet loaded. Loading them on demand.")
+        var err error
+        a.Settings, err = GetSettings() // This is the function from settings.go
+        if err != nil {
+            log.Println("Failed to load settings on demand:", err)
+            return "{}"
+        }
+    }
+
     settingsJSON, err := json.Marshal(a.Settings)
     if err != nil {
         log.Println("Failed to marshal settings:", err)

@@ -1,11 +1,14 @@
 package main
 
 import (
-	"context"
-	"log"
-	"synkrip/api/spotify"
-	"synkrip/api/youtube"
-	"synkrip/fsHandler"
+    "context"
+    "fmt"
+    "log"
+    "synkrip/api/spotify"
+    "synkrip/api/youtube"
+    "synkrip/fsHandler"
+
+    rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 func (a *App) updatePlaylistDb() error {
@@ -125,8 +128,19 @@ func (a *App) downloadContent(ctx context.Context, playlistName string) {
         a.setDownloadStatus("Downloading...", true, index, len(songs))
         if song.IS_DOWNLOADED == 0 {
             log.Printf("Downloading song '%s' from playlist '%s'\n", song.SONG_NAME, playlistName)
-            a.CurrentDB.MarkSongAsDownloaded(song.DIR_ID, song.SONG_YT_ID)
-            a.DownloadVideo(song.SONG_YT_ID, a.LibPath+"/"+playlistName, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME)
+            err := a.DownloadVideo(song.SONG_YT_ID, a.LibPath+"/"+playlistName, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME)
+            if (err != nil) {
+                log.Printf("Download aborted")
+                a.setDownloadStatus("", false, 0, 0)
+                rt.MessageDialog(a.ctx, rt.MessageDialogOptions{
+                    Title:   "Download Error",
+                    Message: fmt.Sprintf("Failed to download song '%s': %v", song.SONG_NAME, err),
+                    Type:    "error",
+                })
+                return
+            } else {
+                a.CurrentDB.MarkSongAsDownloaded(song.DIR_ID, song.SONG_YT_ID)
+            }        
         }
     }
     log.Println("Download completed for playlist:", playlistName)

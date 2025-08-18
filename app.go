@@ -80,18 +80,25 @@ func (a *App) AddEntry(url string, service string) error {
 		playlist, name, image := spotify.IngestSpotifyPlaylist(url)
 		fsHandler.MkDir(a.LibPath, name)
 		err:= a.CurrentDB.AddPlaylistEntry(name, service, url, image)
+		if (err != nil) {
+			log.Println("Error adding entry:", err)
+			a.setDownloadStatus("Adding Playlist", false, 1, 1)
+			return err
+		}
 		for _, song := range playlist.Items {
 			ytId, _ := youtube.GetYTid(song.Track.Name + " " + song.Track.Artists[0].Name)
 			err = a.CurrentDB.AddSongInPlaylist(name, song.Track.Name, song.Track.Album.Name, song.Track.Artists[0].Name, ytId, song.Track.ID, false)
 		}
 		if err != nil {
 			log.Println("Error adding entry:", err)
+			a.setDownloadStatus("Adding Playlist", false, 1, 1)
 		} else {
 			log.Println("Entry added successfully, URL: ", url , " Service: ", service, " Name: ", name)
 			a.setDownloadStatus("Adding Playlist", false, 1, 1)
 		}
 	default:
 		log.Println("Error: Unsupported service in AddEntry:", service)	
+		a.setDownloadStatus("Adding Playlist", false, 1, 1)
 	}
 	return nil
 }
@@ -163,5 +170,6 @@ func (a *App) OpenLibrary(newLib string) error {
 		log.Println("Failed to open library:", err.Error())
 		return err
 	}
+	a.updatePlaylistDb()
 	return nil
 }

@@ -38,6 +38,7 @@ func createLibraryMenu(app *App) *menu.Menu {
 				log.Println("Failed to open library:", err.Error())
 			} else {
                 app.Settings.AddLibrary(app.LibPath)
+                app.updatePlaylistDb()
             }
         }),
         menu.Text("Create New Library", keys.CmdOrCtrl("n"), func(_ *menu.CallbackData) {

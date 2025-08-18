@@ -67,7 +67,7 @@ func externalFrameworksInit() {
 
 
 // DownloadVideo downloads a video using yt-dlp without blocking the main thread
-func (a *App) DownloadVideo(url string, outputDir string, title string) {
+func (a *App) DownloadVideo(url string, outputDir string, title string) error {
     log.Printf("Starting download from URL: %s to directory: %s", url, outputDir)
 
         // Set up command with options for audio extraction
@@ -91,11 +91,12 @@ func (a *App) DownloadVideo(url string, outputDir string, title string) {
         log.Printf("Starting YTDLP running command: %v", cmd.Args)
         if err := cmd.Run(); err != nil {
             log.Printf("Error starting yt-dlp: %v", err)
-            return
+            return err
         }
 
         // Wait for command to finish
         _ = cmd.Wait()
 
         log.Println("Download completed successfully")
+        return nil
 }

@@ -31,14 +31,14 @@ func ScanLibrary(path string, fs *FileSystem) error {
 	log.Println("Scanning library: ", len(directories), " folders found")
 
 	for _, folder := range directories {
-		log.Println("-- Scanning Dir: ", folder.Name())
+		//log.Println("-- Scanning Dir: ", folder.Name())
 		fs.Directories = append(fs.Directories, Playlist{
 			PlaylistName: folder.Name(),
 		})
 		files, _ := os.ReadDir(path + "/" + folder.Name())
 		for _, file := range files {
 			if !file.IsDir() {
-				log.Println("---- File Found: ", file.Name())
+				//log.Println("---- File Found: ", file.Name())
 				fs.Directories[len(fs.Directories)-1].File = append(fs.Directories[len(fs.Directories)-1].File, Song{
 					Name:         file.Name(),
 				})

@@ -22,6 +22,7 @@ type Release struct {
 func getCurrentVersion() (string) {
 	version:= gjson.Get(string(wailsJSON) , "info.productVersion")
 	log.Println("Currently running: " + version.String())
+	log.Println("OS: " + runtime.GOOS + " " + runtime.GOARCH)
 	return version.String()
 }
 
@@ -34,6 +35,11 @@ func getCompilationDate() (string) {
 func checkForUpdate(app *App) {
 
 	version:= getCurrentVersion()
+
+	if !app.Settings.UpdateCheck {
+		log.Println("Update check is disabled in settings, skipping update check.")
+		return
+	}
 
 	fmt.Println("Checking for updates...")
 	resp, err := http.Get(repoURL)

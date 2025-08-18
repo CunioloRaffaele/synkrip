@@ -6,3 +6,4 @@ platformBinary/*
 !platformBinary/readme.md
 **/.DS_Store
 synkripRepo.code-workspace
+telemetry.json

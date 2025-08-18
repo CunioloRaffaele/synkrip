@@ -8,6 +8,8 @@ import (
 	"synkrip/api/youtube"
 	"synkrip/dbHandler"
 	"synkrip/fsHandler"
+
+	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -31,18 +33,35 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.CurrentFileSystem = &fsHandler.FileSystem{}
 	loggerSetup()
+	a.Settings, _ = GetSettings()
 	checkForUpdate(a)
 	externalFrameworksInit()
-	a.Settings, _ = GetSettings()
 	//spotify.SpotifyTets()
 	//youtube.YoutubeTest()
+	//uploadTelemetry(a)
+}
+
+func (a *App) domready(ctx context.Context) {
+	if !a.Settings.EulaAccepted {
+		rt.EventsEmit(ctx, "showEula")
+		a.Settings.EulaAccepted = true
+	}
 }
 
 func (a *App) shutdown(ctx context.Context) {
+	// close db connection
     if a.CurrentDB != nil {
         a.CurrentDB.Close()
         a.CurrentDB = nil
     }
+	// save modified settings to file
+	if a.Settings != nil {
+		if err := SaveSettings(a.Settings); err != nil {
+			log.Println("Error saving settings:", err)
+		}
+	}
+	// send telemetry data
+	uploadTelemetry(a)
 }
 
 // Pass db json to the app frontend

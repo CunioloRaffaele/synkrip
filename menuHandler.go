@@ -19,6 +19,9 @@ func createFileMenu(app *App) *menu.Menu {
         menu.Text("View open source libs", nil, func(_ *menu.CallbackData) {
             rt.EventsEmit(app.ctx, "osLib")
         }),
+        menu.Text("Settings", nil, func(_ *menu.CallbackData) {
+            rt.EventsEmit(app.ctx, "settings")
+        }),
         menu.Separator(),
         menu.Text("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
             rt.Quit(app.ctx)
@@ -37,7 +40,7 @@ func createLibraryMenu(app *App) *menu.Menu {
                 app.Settings.AddLibrary(app.LibPath)
             }
         }),
-        menu.Text("Create New Library", keys.CmdOrCtrl("a"), func(_ *menu.CallbackData) {
+        menu.Text("Create New Library", keys.CmdOrCtrl("n"), func(_ *menu.CallbackData) {
             err := fsHandler.CreateLibrary(app.ctx, &app.LibPath, &app.CurrentDB)
             if err != nil {
 				log.Println("Failed to create library:", err.Error())

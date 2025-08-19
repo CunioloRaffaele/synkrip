@@ -72,6 +72,23 @@ func GetSettings() (*Settings, error) {
 		return defaultSettings, nil
 	}
 
+	// Check if file is empty or corrupted
+    fileInfo, err := os.Stat(settingsFilePath)
+    if err != nil {
+        return nil, err
+    }
+
+    if fileInfo.Size() == 0 {
+        log.Println("Settings file is empty/corrupted (0 bytes), recreating with default values.")
+        // delete file
+        err := os.Remove(settingsFilePath)
+        if err != nil {
+            return nil, err
+        }
+        // call the function again to recreate the settings file
+        return GetSettings()
+    }
+
 	// Open the file
 	file, err := os.Open(settingsFilePath)
 	if err != nil {

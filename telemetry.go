@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,6 +11,8 @@ import (
 	fsHandler "synkrip/fsHandler"
 	storage_go "github.com/supabase-community/storage-go"
 )
+
+const MaxLogSize = 1024 * 1024 // 1MB in bytes
 
 // TelemetryConfig represents the structure of telemetry.json
 type TelemetryConfig struct {
@@ -44,6 +47,51 @@ func loadTelemetryConfig() (*TelemetryConfig, error) {
 	return &config, nil
 }
 
+// readLastMBOfFile reads the last 1MB of a file, or the entire file if it's smaller
+func readLastMBOfFile(filePath string) ([]byte, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Get file size
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	fileSize := fileInfo.Size()
+
+	// If file is smaller than 1MB, read the entire file
+	if fileSize <= MaxLogSize {
+		log.Printf("Log file size: %d bytes (less than 1MB), reading entire file", fileSize)
+		return os.ReadFile(filePath)
+	}
+
+	// File is larger than 1MB, read only the last 1MB
+	log.Printf("Log file size: %d bytes (larger than 1MB), reading last 1MB", fileSize)
+
+	// Calculate the offset to start reading from (last 1MB)
+	offset := fileSize - MaxLogSize
+
+	// Seek to the calculated offset
+	_, err = file.Seek(offset, io.SeekStart)
+	if err != nil {
+		return nil, err
+	}
+
+	// Read the last 1MB
+	buffer := make([]byte, MaxLogSize)
+	bytesRead, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+
+	// Return only the bytes that were actually read
+	return buffer[:bytesRead], nil
+}
+
 func uploadTelemetry(a *App) {
 	if !a.Settings.TelemetryEnabled {
 		log.Println("Telemetry is disabled in settings, skipping upload.")
@@ -69,12 +117,14 @@ func uploadTelemetry(a *App) {
 		return
 	}
 
-	// Read the file content
-	fileBody, err := os.ReadFile(logFilePath)
+	// Read the file content (last 1MB if file is large)
+	fileBody, err := readLastMBOfFile(logFilePath)
 	if err != nil {
 		log.Printf("Error reading log file: %v", err)
 		return
 	}
+
+	log.Printf("Uploading %d bytes of log data", len(fileBody))
 
 	upsert := true // if file exists, update it
 	resultUPLOAD, err := storageClient.UploadFile("Logs", a.Settings.UserIdentifier+".txt", bytes.NewReader(fileBody), storage_go.FileOptions{Upsert: &upsert})

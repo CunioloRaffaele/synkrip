@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 )
 
 type UnifiedSongFormat struct {
@@ -14,7 +15,7 @@ type UnifiedSongFormat struct {
 type UnifiedPlaylistFormat struct {
 	Name string
 	Songs []UnifiedSongFormat
-	Image string
+	Image string 				// base64 encoded image
 }
 
 type ApiMusicService interface {
@@ -31,6 +32,7 @@ var serviceRegistry = make(map[string]func() ApiMusicService)
 // RegisterService (to register a new music service)
 func RegisterService(name string, factory func() ApiMusicService) {
     serviceRegistry[name] = factory
+	log.Printf("Registering service: %s\n", name)
 }
 
 // GetMusicService (to get a music service by name)

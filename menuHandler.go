@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"runtime"
 	"synkrip/fsHandler"
@@ -14,7 +15,7 @@ import (
 func createFileMenu(app *App) *menu.Menu {
     return menu.NewMenuFromItems(
         menu.Text("Check for app updates", nil, func(_ *menu.CallbackData) {
-            checkForUpdate(app)
+            checkForUpdate(app, true)
         }),
         menu.Text("View open source libs", nil, func(_ *menu.CallbackData) {
             rt.EventsEmit(app.ctx, "osLib")
@@ -38,7 +39,15 @@ func createLibraryMenu(app *App) *menu.Menu {
 				log.Println("Failed to open library:", err.Error())
 			} else {
                 app.Settings.AddLibrary(app.LibPath)
-                app.updatePlaylistDb()
+                err := app.updatePlaylistDb()
+                if err != nil {
+                    log.Println("Failed to update playlist database:", err.Error())
+                    rt.MessageDialog(app.ctx, rt.MessageDialogOptions{
+                        Title:   "Update Error",
+                        Message: fmt.Sprintf("Failed to update playlist database: %v", err),
+                        Type:    "error",
+                    })
+                }
             }
         }),
         menu.Text("Create New Library", keys.CmdOrCtrl("n"), func(_ *menu.CallbackData) {

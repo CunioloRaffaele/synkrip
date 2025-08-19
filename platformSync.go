@@ -1,14 +1,15 @@
 package main
 
 import (
-    "context"
-    "fmt"
-    "log"
-    "synkrip/api/spotify"
-    "synkrip/api/youtube"
-    "synkrip/fsHandler"
+	"context"
+	"fmt"
+	"log"
+	"synkrip/api"
+    _"synkrip/api/spotify" // import must be added to allow spotify to register with init()
+	"synkrip/api/youtube"
+	"synkrip/fsHandler"
 
-    rt "github.com/wailsapp/wails/v2/pkg/runtime"
+	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 func (a *App) updatePlaylistDb() error {
@@ -25,7 +26,6 @@ func (a *App) updatePlaylistDb() error {
         // display download status in the frontend
         a.setDownloadStatus("Db Update", true, index, len(playlists))
 
-        doneSomething := false
         // Get all songs in the database for the current playlist
         songsDbArr, err := a.CurrentDB.GetSongs(pl.DIR_ID)
         if err != nil {
@@ -40,62 +40,76 @@ func (a *App) updatePlaylistDb() error {
         }
 
         // Handle synchronization based on the service
-        switch pl.SERVICE {
-        case "Spotify":
-            // Fetch the latest playlist data from Spotify
-            spotifyPlaylist, _, image := spotify.IngestSpotifyPlaylist(pl.URL)
-            //TODO: Handle error properly
-
-            // update the playlist image in the database
-            err = a.CurrentDB.UpdateImage(pl.DIR_ID, image)
-            // Create a map of song IDs in the Spotify playlist
-            songIdsInSpotify := make(map[string]bool)
-            for _, item := range spotifyPlaylist.Items {
-                songIdsInSpotify[item.Track.ID] = true
-            }
-
-            // Remove songs from the database that are no longer in the Spotify playlist
-            for _, song := range songsDbArr {
-                if !songIdsInSpotify[song.SONG_PLATFORM_ID] {
-                    log.Printf("Removing song '%s' from playlist '%s' as it is no longer in Spotify\n", song.SONG_NAME, pl.DIR_ID)
-                    doneSomething = true
-                    var err error
-                    err = a.CurrentDB.RemoveSongFromPlaylist(pl.DIR_ID, song.SONG_PLATFORM_ID)
-                    err = fsHandler.RemoveSongFile(a.LibPath, pl.DIR_ID, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME + ".m4a")
-                    if err != nil {
-                        log.Printf("Error removing song '%s' from playlist '%s': %v\n", song.SONG_NAME, pl.DIR_ID, err)
-                        return err
-                    }
-                    
-                }
-            }
-
-            // Add new songs from the Spotify playlist to the database
-            for _, item := range spotifyPlaylist.Items {
-                if !songIdsInDB[item.Track.ID] {
-                    log.Printf("Adding new song '%s' to playlist '%s'\n", item.Track.Name, pl.DIR_ID)
-                    doneSomething = true
-                    ytId, _ := youtube.GetYTid(item.Track.Name + " " + item.Track.Artists[0].Name)
-                    err := a.CurrentDB.AddSongInPlaylist(
-                        pl.DIR_ID,
-                        item.Track.Name,
-                        item.Track.Album.Name,
-                        item.Track.Artists[0].Name,
-                        ytId,
-                        item.Track.ID,
-                        false, // IS_DOWNLOADED
-                    )
-                    if err != nil {
-                        log.Printf("Error adding song '%s' to playlist '%s': %v\n", item.Track.Name, pl.DIR_ID, err)
-                        return err
-                    }
-                }
-            }
-
-        default:
-            log.Printf("Unknown service '%s' for playlist '%s'\n", pl.SERVICE, pl.DIR_ID)
+        musicService, err := api.GetMusicService(pl.SERVICE)
+        if err != nil {
+            log.Println("Error getting music service:", err)
+            a.setDownloadStatus("", false, 0, 0)
+            return err
         }
-        log.Println("Playlist synchronization completed for:", pl.DIR_ID, "Modification:", doneSomething)
+
+        playlistData, err := musicService.FetchPlaylist(pl.URL)
+        if err != nil {
+            log.Println("Error fetching playlist data:", err)
+            a.setDownloadStatus("", false, 0, 0)
+            return err
+        }
+
+        // update database image
+        err = a.CurrentDB.UpdateImage(pl.DIR_ID, playlistData.Image)
+        if err != nil {
+            log.Println("Error updating playlist image:", err)
+            a.setDownloadStatus("", false, 0, 0)
+            return err
+        }
+
+        // Create a map of song IDs in the Spotify playlist
+        songIdsInService := make(map[string]bool)
+        for _, item := range playlistData.Songs {
+            songIdsInService[item.ID] = true
+        }
+
+        // Remove songs from the database that are no longer in the service playlist
+        for _, song := range songsDbArr {
+            if !songIdsInService[song.SONG_PLATFORM_ID] {
+                log.Printf("Removing song '%s' from playlist '%s' as it is no longer in service\n", song.SONG_NAME, pl.DIR_ID)
+                var err error
+                err = a.CurrentDB.RemoveSongFromPlaylist(pl.DIR_ID, song.SONG_PLATFORM_ID)
+                if err != nil {
+                    log.Printf("Error removing song '%s' from db '%s': %v\n", song.SONG_NAME, pl.DIR_ID, err)
+                    a.setDownloadStatus("", false, 0, 0)
+                    return err
+                }
+                err = fsHandler.RemoveSongFile(a.LibPath, pl.DIR_ID, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME + ".m4a")
+                if err != nil {
+                    log.Printf("Error removing song '%s' from filesystem '%s': %v\n", song.SONG_NAME, pl.DIR_ID, err)
+                    a.setDownloadStatus("", false, 0, 0)
+                    return err
+                }
+                
+            }
+        }
+
+        // Add new songs from the service playlist to the database
+        for _, item := range playlistData.Songs {
+            if !songIdsInDB[item.ID] {
+                log.Printf("Adding new song '%s' to playlist '%s'\n", item.Name, pl.DIR_ID)
+                ytId, _ := youtube.GetYTid(item.Name + " " + item.Artists[0])
+                err := a.CurrentDB.AddSongInPlaylist(
+                    pl.DIR_ID,
+                    item.Name,
+                    item.Album,
+                    item.Artists[0],
+                    ytId,
+                    item.ID,
+                    false, // IS_DOWNLOADED
+                )
+                if err != nil {
+                    log.Printf("Error adding song '%s' to playlist '%s': %v\n", item.Name, pl.DIR_ID, err)
+                    a.setDownloadStatus("", false, 0, 0)
+                    return err
+                }
+            }
+        }
     }
 
     log.Println("Playlist synchronization completed.")

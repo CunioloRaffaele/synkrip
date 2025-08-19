@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
-	"synkrip/api/spotify"
-	"synkrip/api/youtube"
+	"synkrip/api"
 	"synkrip/dbHandler"
 	"synkrip/fsHandler"
 
@@ -33,8 +33,13 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	a.CurrentFileSystem = &fsHandler.FileSystem{}
 	loggerSetup()
-	a.Settings, _ = GetSettings()
-	checkForUpdate(a)
+	var err error
+	a.Settings, err = GetSettings()
+	if err != nil {
+		log.Println("Error loading settings at startup:", err)
+		return
+	}
+	checkForUpdate(a, false)
 	externalFrameworksInit()
 	//spotify.SpotifyTets()
 	//youtube.YoutubeTest()
@@ -75,31 +80,38 @@ func (a *App) AddEntry(url string, service string) error {
 	// TODO make this work in a goroutine
 	// TODO verify if the playlist already exists
 	a.setDownloadStatus("Adding Playlist", true, 1, 1)
-	switch service {
-	case "Spotify":
-		playlist, name, image := spotify.IngestSpotifyPlaylist(url)
-		fsHandler.MkDir(a.LibPath, name)
-		err:= a.CurrentDB.AddPlaylistEntry(name, service, url, image)
-		if (err != nil) {
-			log.Println("Error adding entry:", err)
-			a.setDownloadStatus("Adding Playlist", false, 1, 1)
-			return err
-		}
-		for _, song := range playlist.Items {
-			ytId, _ := youtube.GetYTid(song.Track.Name + " " + song.Track.Artists[0].Name)
-			err = a.CurrentDB.AddSongInPlaylist(name, song.Track.Name, song.Track.Album.Name, song.Track.Artists[0].Name, ytId, song.Track.ID, false)
-		}
-		if err != nil {
-			log.Println("Error adding entry:", err)
-			a.setDownloadStatus("Adding Playlist", false, 1, 1)
-		} else {
-			log.Println("Entry added successfully, URL: ", url , " Service: ", service, " Name: ", name)
-			a.setDownloadStatus("Adding Playlist", false, 1, 1)
-		}
-	default:
-		log.Println("Error: Unsupported service in AddEntry:", service)	
+	musicService, err := api.GetMusicService(service)
+	if err != nil {
+		log.Println("Error getting music service:", err)
 		a.setDownloadStatus("Adding Playlist", false, 1, 1)
+		return err
 	}
+	playlistData, err := musicService.FetchPlaylist(url)
+	if err != nil {
+		log.Println("Error fetching playlist:", err)
+		a.setDownloadStatus("Adding Playlist", false, 1, 1)
+		return err
+	}
+
+	fsHandler.MkDir(a.LibPath, playlistData.Name)
+	err = a.CurrentDB.AddPlaylistEntry(playlistData.Name, service, url, playlistData.Image)
+	if (err != nil) {
+		log.Println("Error adding entry:", err)
+		a.setDownloadStatus("Adding Playlist", false, 1, 1)
+		return err
+	} else {
+		a.setDownloadStatus("Adding Playlist", false, 1, 1)
+		err = a.updatePlaylistDb()
+	if err != nil {
+		log.Println("Failed to update playlist database:", err.Error())
+		rt.MessageDialog(a.ctx, rt.MessageDialogOptions{
+			Title:   "Update Error",
+			Message: fmt.Sprintf("Failed to update playlist database: %v", err),
+			Type:    "error",
+		})
+	}
+	}
+
 	return nil
 }
 
@@ -110,6 +122,15 @@ func (a *App) DeletePlaylist(title string) error {
 		return err
 	}
 	log.Println("Playlist deleted successfully:", title)
+	err = a.updatePlaylistDb()
+	if err != nil {
+		log.Println("Failed to update playlist database:", err.Error())
+		rt.MessageDialog(a.ctx, rt.MessageDialogOptions{
+			Title:   "Update Error",
+			Message: fmt.Sprintf("Failed to update playlist database: %v", err),
+			Type:    "error",
+		})
+	}
 	return nil
 }
 
@@ -170,6 +191,14 @@ func (a *App) OpenLibrary(newLib string) error {
 		log.Println("Failed to open library:", err.Error())
 		return err
 	}
-	a.updatePlaylistDb()
+	err = a.updatePlaylistDb()
+	if err != nil {
+		log.Println("Failed to update playlist database:", err.Error())
+		rt.MessageDialog(a.ctx, rt.MessageDialogOptions{
+			Title:   "Update Error",
+			Message: fmt.Sprintf("Failed to update playlist database: %v", err),
+			Type:    "error",
+		})
+	}
 	return nil
 }

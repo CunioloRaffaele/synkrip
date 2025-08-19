@@ -9,7 +9,7 @@
       :style="{ '--index': index }">
       <PlaylistCover :image="playlist.image" :title="playlist.dir_id"
         :songs="playlist.songs.map(song => ({ name: song.song_name, downloaded: song.is_downloaded === 1 }))"
-        :needsSync="playlist.toBeSynced" @sync-clicked="handleSync" 
+        :needsSync="getPlaylistSyncStatus(playlist)" @sync-clicked="handleSync" 
         :service="playlist.service" />
     </div>
   </transition-group>
@@ -106,6 +106,15 @@ export default {
         .catch((error) => {
           console.error('Error fetching playlists:', error);
         });
+    },
+    // sync status
+    getPlaylistSyncStatus(playlist) {
+      // if download status is visible, hide toBeSynced
+      if (this.isDownloadVisible) {
+        return false;
+      }
+      // Otherwise show original value
+      return playlist.toBeSynced;
     }
   },
   mounted() {

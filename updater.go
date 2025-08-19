@@ -32,16 +32,16 @@ func getCompilationDate() (string) {
 	return version.String()
 }
 
-func checkForUpdate(app *App) {
+func checkForUpdate(app *App, isManualCheck bool) {
 
 	version:= getCurrentVersion()
 
-	if !app.Settings.UpdateCheck {
+	if (!app.Settings.UpdateCheck && !isManualCheck) {
 		log.Println("Update check is disabled in settings, skipping update check.")
 		return
 	}
 
-	fmt.Println("Checking for updates...")
+	log.Println("Checking for updates... manualCheck:  " + fmt.Sprintf("%v", isManualCheck))
 	resp, err := http.Get(repoURL)
 	if err != nil {
 		log.Printf("failed to get latest release: %v", err)
@@ -96,7 +96,7 @@ func checkForUpdate(app *App) {
 			r.MessageDialog(app.ctx, r.MessageDialogOptions{
 			Type:          r.ErrorDialog,
 			Title:         "Warning",
-			Message:       "This version may not be supported anymore. \nIf you encounter bugs please update.",
+			Message:       "This version may not work as expected. \nIf you encounter bugs please update.",
 			Buttons:       []string{"Ok"},
 			DefaultButton: "Ok",
 			})

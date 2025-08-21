@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"log"
 	"os"
@@ -22,29 +21,25 @@ type TelemetryConfig struct {
 	} `json:"supabase"`
 }
 
-// loadTelemetryConfig reads the telemetry.json file
+// Build-time variables (set by ldflags)
+var (
+    SupabaseURL     string
+    SupabaseAnonKey string
+)
+
+// loadTelemetryConfig loads config from build-time variables or returns disabled config
 func loadTelemetryConfig() (*TelemetryConfig, error) {
-	configFile := "telemetry.json"
+    // Crash if build-time variables are empty
+    if SupabaseURL == "" || SupabaseAnonKey == "" {
+        log.Println("Telemetry disabled: no build-time configuration. Killing...")
+        os.Exit(1)
+    }
 
-	// Check if file exists
-	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		return nil, err
-	}
-
-	// Read the file
-	data, err := os.ReadFile(configFile)
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse JSON
-	var config TelemetryConfig
-	err = json.Unmarshal(data, &config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &config, nil
+    config := &TelemetryConfig{}
+    config.Supabase.URL = SupabaseURL
+    config.Supabase.AnonKey = SupabaseAnonKey
+    
+    return config, nil
 }
 
 // readLastMBOfFile reads the last 1MB of a file, or the entire file if it's smaller

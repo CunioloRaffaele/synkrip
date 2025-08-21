@@ -8,6 +8,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 //go:embed all:frontend/dist
@@ -16,13 +17,13 @@ var assets embed.FS
 //go:embed wails.json
 var wailsJSON []byte
 
-// TODO : add multi-platform support for binaries
-//go:embed platformBinary/yt-dlp_darwin
-var ytdlp_darwin []byte
-//go:embed platformBinary/ffmpeg_darwin
-var ffmpeg_darwin []byte
-//go:embed platformBinary/ffprobe_darwin
-var ffprobe_darwin []byte
+// When compiling place the correct binaries for the platform inside "platformBinary"
+//go:embed platformBinary/yt-dlp_binary
+var ytdlp_binary []byte
+//go:embed platformBinary/ffmpeg_binary
+var ffmpeg_binary []byte
+//go:embed platformBinary/ffprobe_binary
+var ffprobe_binary []byte
 
 
 func main() {
@@ -66,6 +67,17 @@ func main() {
                 Message: "Made with ❤️ by Cuniolo Raffaele.\n\nPlease use it wisely and support the artists who create the songs you download.\n\n" + "Version: " + getCurrentVersion() + "\n" + "Compiled: " + getCompilationDate(),
             },
 			DisableZoom: true,
+        },
+		Windows: &windows.Options{
+            WebviewIsTransparent:              true,
+            WindowIsTranslucent:               true,
+            BackdropType:                      windows.Mica,
+            DisablePinchZoom:               true,
+            DisableWindowIcon:                 false,
+            DisableFramelessWindowDecorations: false,
+            WebviewUserDataPath:               "",
+            WebviewBrowserPath:                "",
+            Theme:                             windows.SystemDefault,
         },
 		
 	})

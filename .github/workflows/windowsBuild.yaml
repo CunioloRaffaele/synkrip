@@ -1,0 +1,188 @@
+name: Build Windows App
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Install Wails
+      run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+    - name: Install NSIS
+      run: |
+        Write-Host "Installing NSIS..."
+        choco install nsis -y
+        Write-Host "NSIS installed successfully"
+        
+        # Verify NSIS installation
+        makensis /VERSION
+      shell: powershell
+
+    - name: Create platformBinary directory
+      run: mkdir -p platformBinary
+      shell: bash
+
+    - name: Download yt-dlp for Windows
+      run: |
+        echo "🔽 Downloading yt-dlp for Windows..."
+        curl -L "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -o "platformBinary/yt-dlp_binary"
+        echo "✅ yt-dlp downloaded"
+        ls -la platformBinary/yt-dlp_binary
+      shell: bash
+
+    - name: Download FFmpeg for Windows
+      run: |
+        echo "🔽 Downloading FFmpeg for Windows..."
+        
+        # Scarica FFmpeg essentials build (più piccolo)
+        curl -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -o "ffmpeg.zip"
+        
+        # Estrai e copia i binari necessari
+        unzip -q ffmpeg.zip
+        
+        # Trova la cartella estratta (ha un nome con versione)
+        FFMPEG_DIR="ffmpeg-master-latest-win64-gpl"
+        
+        # Copia i binari nella cartella giusta
+        cp "$FFMPEG_DIR/bin/ffmpeg.exe" "platformBinary/ffmpeg_binary"
+        cp "$FFMPEG_DIR/bin/ffprobe.exe" "platformBinary/ffprobe_binary"
+        
+        # Cleanup
+        rm -rf ffmpeg.zip "$FFMPEG_DIR"
+        
+        echo "✅ FFmpeg and FFprobe downloaded"
+        ls -la platformBinary/ffmpeg_binary
+        ls -la platformBinary/ffprobe_binary
+      shell: bash
+
+    - name: Verify downloaded binaries
+      run: |
+        echo "🔍 Verifying downloaded binaries..."
+        echo "Files in platformBinary:"
+        ls -la platformBinary/
+        
+        echo ""
+        echo "File sizes:"
+        du -h platformBinary/*
+        
+        echo ""
+        echo "File types:"
+        file platformBinary/* || echo "file command not available"
+      shell: bash
+
+    - name: Build with Wails and NSIS
+      run: |
+        echo "🔨 Building Windows app with NSIS installer..."
+        if [ -n "${{ secrets.SUPABASE_URL }}" ] && [ -n "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+          echo "Building with telemetry enabled"
+          wails build -platform windows/amd64 -nsis -ldflags="-X main.SupabaseURL=${{ secrets.SUPABASE_URL }} -X main.SupabaseAnonKey=${{ secrets.SUPABASE_ANON_KEY }}"
+        else
+          echo "Building without telemetry"
+          wails build -platform windows/amd64 -nsis
+        fi
+      shell: bash
+
+    - name: Verify build output
+      run: |
+        echo "Checking build output..."
+        ls -la build/bin/
+        
+        # Check for .exe file
+        if [ -f "build/bin/SynkRip.exe" ]; then
+          echo "SynkRip.exe created successfully"
+          echo "File size: $(du -h build/bin/SynkRip.exe | cut -f1)"
+        else
+          echo "ERROR: SynkRip.exe not found!"
+        fi
+        
+        # Check for installer
+        if ls build/bin/*.exe | grep -v "SynkRip.exe" >/dev/null 2>&1; then
+          INSTALLER=$(ls build/bin/*.exe | grep -v "SynkRip.exe" | head -1)
+          echo "NSIS Installer created: $(basename $INSTALLER)"
+          echo "Installer size: $(du -h $INSTALLER | cut -f1)"
+        else
+          echo "WARNING: NSIS installer not found, checking for alternative names..."
+          ls -la build/bin/
+        fi
+      shell: bash
+
+    - name: Install zip utility
+      run: |
+        Write-Host "Installing zip utility..."
+        choco install zip -y
+        Write-Host "Zip utility installed"
+      shell: powershell
+      
+    - name: Create ZIP package (Portable version)
+      run: |
+        echo "📦 Creating ZIP package for portable version..."
+        cd build/bin
+        zip -r "SynkRip-Windows-Portable-${{ github.sha }}.zip" SynkRip.exe
+        echo "✅ ZIP package created"
+        ls -la *.zip
+      shell: bash
+
+    - name: Rename installer for release
+      run: |
+        echo "🏷️ Renaming installer for release..."
+        cd build/bin
+        
+        # Find the installer file (usually has 'installer' in name or is the second .exe)
+        INSTALLER_FILE=""
+        for file in *.exe; do
+          if [ "$file" != "SynkRip.exe" ]; then
+            INSTALLER_FILE="$file"
+            break
+          fi
+        done
+        
+        if [ -n "$INSTALLER_FILE" ]; then
+          NEW_NAME="SynkRip-Windows-Installer-${{ github.sha }}.exe"
+          mv "$INSTALLER_FILE" "$NEW_NAME"
+          echo "✅ Installer renamed to: $NEW_NAME"
+          ls -la *.exe
+        else
+          echo "⚠️  No installer file found to rename"
+        fi
+      shell: bash
+
+    - name: Upload Portable build (artifact)
+      uses: actions/upload-artifact@v4
+      with:
+        name: SynkRip-Windows-Portable-${{ github.sha }}
+        path: build/bin/SynkRip-Windows-Portable-${{ github.sha }}.zip
+
+    - name: Upload Installer (artifact)
+      uses: actions/upload-artifact@v4
+      with:
+        name: SynkRip-Windows-Installer-${{ github.sha }}
+        path: build/bin/SynkRip-Windows-Installer-${{ github.sha }}.exe
+
+    # 🚀 RELEASE AUTOMATICO - Funziona solo con tag v*
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          build/bin/SynkRip-Windows-Portable-${{ github.sha }}.zip
+          build/bin/SynkRip-Windows-Installer-${{ github.sha }}.exe
+        name: "SynkRip ${{ github.ref_name }}"
+        tag_name: ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

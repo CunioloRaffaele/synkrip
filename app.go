@@ -65,6 +65,7 @@ func (a *App) shutdown(ctx context.Context) {
 			log.Println("Error saving settings:", err)
 		}
 	}
+	loggerCleanup()
 	// send telemetry data
 	uploadTelemetry(a)
 }

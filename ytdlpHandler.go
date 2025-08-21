@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"synkrip/fsHandler"
 )
 
@@ -13,6 +14,19 @@ var (
     ffmpegPath  string
     ffprobePath string
 )
+
+func getBinaryNames() (string, string, string) {
+    switch runtime.GOOS {
+    case "windows":
+        return "ytdlp_windows.exe", "ffmpeg_windows.exe", "ffprobe_windows.exe"
+    case "darwin":
+        return "ytdlp_darwin", "ffmpeg_darwin", "ffprobe_darwin"
+    case "linux":
+        return "ytdlp_linux", "ffmpeg_linux", "ffprobe_linux"
+    default:
+        return "ytdlp", "ffmpeg", "ffprobe"
+    }
+}
 
 // extractBinary extracts an embedded binary to the filesystem and makes it executable
 func extractBinary(binaryName string, binaryData []byte) (string, error) {
@@ -43,20 +57,22 @@ func extractBinary(binaryName string, binaryData []byte) (string, error) {
 // externalFrameworksInit extracts all required binaries
 func externalFrameworksInit() {
 	var err error
+    // Get platform-specific binary names
+    ytdlpName, ffmpegName, ffprobeName := getBinaryNames()
     // Extract yt-dlp binary
-    ytdlpPath, err = extractBinary("ytdlp_darwin", ytdlp_darwin)
+    ytdlpPath, err = extractBinary(ytdlpName, ytdlp_binary)
     if err != nil {
         log.Printf("Failed to extract yt-dlp: %v", err)
     }
     
     // Extract ffmpeg binary
-    ffmpegPath, err = extractBinary("ffmpeg_darwin", ffmpeg_darwin)
+    ffmpegPath, err = extractBinary(ffmpegName, ffmpeg_binary)
     if err != nil {
         log.Printf("Failed to extract ffmpeg: %v", err)
     }
     
     // Extract ffprobe binary
-    ffprobePath, err = extractBinary("ffprobe_darwin", ffprobe_darwin)
+    ffprobePath, err = extractBinary(ffprobeName, ffprobe_binary)
     if err != nil {
         log.Printf("Failed to extract ffprobe: %v", err)
     }

@@ -1,12 +1,12 @@
 # SynkRip
 
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/4eb26b8f-49b0-4d4a-a252-b6ba33b09c96" alt="SynkRip logo" width="300">
+    <img src="https://github.com/CunioloRaffaele/synkrip/blob/main/build/appicon.png?raw=true" alt="SynkRip logo" width="300">
 </p>
 
 #### A powerful desktop application that seamlessly syncs and manages your music libraries from multiple platforms and services. 🎵 ✨
 
-![OS](https://img.shields.io/badge/OS-MacOs-cyan?style=for-the-badge)
+![OS](https://img.shields.io/badge/OS-MacOs/Windows-cyan?style=for-the-badge)
 ![language](https://img.shields.io/badge/lang-go-blueviolet?style=for-the-badge)
 ![License](https://img.shields.io/github/license/CunioloRaffaele/synkrip?style=for-the-badge)
 <br>
@@ -18,10 +18,10 @@
 
 - **Automatic Library Management**:<br>Create, open, and scan music libraries for better organization, with automatic synchronization between online playlists and local folders
 - **Spotify download and sync**:<br>Fetch playlists and synchronize them with your local library
-- **YouTube Music download and sync**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Fetch playlists and synchronize them with your local library 
+- **YouTube Music download and sync**:<br>Fetch playlists and synchronize them with your local library 
 - **SoundCloud download and sync**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Fetch playlists and synchronize them with your local library
 - **Apple Music download and sync**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Fetch playlists and synchronize them with your local library
-- **Cross-Platform Support**:<br>![TODO](https://img.shields.io/badge/status-TODO-red)<br>Works on macOS and Windows
+- **Cross-Platform Support**:<br>Works on macOS and Windows
 - **User-Friendly Experience**:<br>Unlike command-line tools, SynkRip offers an intuitive graphical interface that makes music library management accessible to everyone
 
 ## Installation
@@ -38,9 +38,9 @@
 3. 🚀  **Launch SynkRip**:
     - Open the app from your Applications folder (macOS) or Start Menu (Windows)
     <br>
-     ⚠️  **Warning for macOS users**: 
-    <br>When launching for the first time, you may encounter an "unknown developer" warning. Right-click the app and select "Open" to bypass this warning, or adjust your security settings in System Preferences.
-    <br>This happens even if the app is signed since macOS requires apps to be notarized by Apple to bypass the "unknown developer" warning.
+> [!WARNING]
+> When launching for the first time, you may encounter an "unknown developer" warning. Right-click the app and select "Open" to bypass this warning, or adjust your security settings in System Preferences.
+> This happens even if the app is signed since macOS requires apps to be notarized by Apple to bypass the "unknown developer" warning.
 
 ## Usage
 
@@ -48,8 +48,23 @@
 - **Open an Existing Library**: Load a previously created library and manage or update its contents.
 
 ## Disclaimers
+**LEGAL DISCLAIMER AND TERMS OF USE**
 
-SynkRip is intended for personal use only. <u>I do not endorse or condone piracy or intellectual property theft. Please ensure that you have the legal right to download, store, and use any music files managed through this application.</u>
+SynkRip is provided for personal, non-commercial use only. By using this application, you acknowledge and agree to the following:
+
+1. **Copyright Compliance**: You are solely responsible for ensuring that you have the legal right to download, store, and use any music files managed through this application. This includes having proper licenses, subscriptions, or ownership rights to the content.
+
+2. **No Endorsement of Piracy**: The developers of SynkRip do not endorse, encourage, or condone piracy, copyright infringement, or any form of intellectual property theft.
+
+3. **User Responsibility**: Users must comply with all applicable local, national, and international copyright laws and regulations. Any unauthorized downloading or distribution of copyrighted material is strictly prohibited.
+
+4. **Service Terms**: Users must also comply with the terms of service of any third-party platforms (Spotify, YouTube Music, SoundCloud, Apple Music, etc.) when accessing content through their services.
+
+5. **Limitation of Liability**: The developers disclaim any responsibility for users' actions or any legal consequences arising from the misuse of this application.
+
+6. **Indemnification**: By using SynkRip, you agree to indemnify and hold harmless the developers from any claims, damages, or legal issues arising from your use of the application.
+
+**USE THIS SOFTWARE AT YOUR OWN RISK AND ENSURE COMPLIANCE WITH ALL APPLICABLE LAWS.**
 <br><br>
 This project uses my private API keys to fetch playlists from Spotify but, these keys, are subject to rate limits and restrictions. To ensure uninterrupted usage, it is highly recommended that you generate and use your own API keys. Instructions for setting up your own API keys can be found in the respective service's developer documentation.
 <br>

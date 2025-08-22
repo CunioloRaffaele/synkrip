@@ -16,7 +16,7 @@ query := `SELECT * FROM playlists`
 	playlists := []Playlist{}
 	for rows.Next() {
 		var playlist Playlist
-		err := rows.Scan(&playlist.DIR_ID, &playlist.SERVICE, &playlist.URL, &playlist.IMAGE)
+		err := rows.Scan(&playlist.DIR_ID, &playlist.SERVICE, &playlist.URL, &playlist.IMAGE, &playlist.ADD_DATE, &playlist.LAST_MODIFIED)
 		if err != nil {
 			log.Printf("Error scanning row: %v", err)
 			return nil, err

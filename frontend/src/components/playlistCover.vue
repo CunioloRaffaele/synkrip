@@ -1,12 +1,13 @@
 <template>
     <div class="playlist-entry" :style="{ backgroundImage: `url(${image})` }" :class="{ 'needs-sync': needsSync }"
-        @contextmenu.prevent="toggleSelection">
+        @contextmenu.prevent="toggleSelection" @click="handleCoverClick" :data-layout="layout">
         <!-- Frosted Glass Overlay -->
         <transition name="fade">
             <div v-if="isSelected" class="frosted-overlay">
                 <!-- Bin Icon -->
                 <div class="delete-icon" @click.stop="deletePlaylist" aria-label="Delete Playlist">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                         <line x1="10" y1="11" x2="10" y2="17"></line>
@@ -24,19 +25,22 @@
                 <!-- Service image overlay -->
                 <img :src="getServiceIcon(service)" alt="Service Icon" class="service-icon" />
                 <!-- Add sync icon overlay -->
-                <div class="sync-icon" v-if="needsSync" @click="sync">
+                <div class="sync-icon" v-if="needsSync" @click="handleSyncClick">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                         <path fill="#000000"
                             d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
                     </svg>
                 </div>
             </div>
-            <div class="playlist-info">
+            <div v-if="layout === 'full'" class="playlist-info">
                 <div class="playlist-title">{{ title }}</div>
                 <div class="song-list-container">
                     <ul class="song-list">
-                        <li v-for="(song, index) in songs" :key="index" class="song-item"
+                        <!--<li v-for="(song, index) in songs" :key="index" class="song-item"
                             :class="{ ' not-downloaded': !song.downloaded }">
+                            {{ song.name }}
+                             -->
+                        <li v-for="(song, index) in songs" :key="index" class="song-item">
                             {{ song.name }}
                         </li>
                     </ul>
@@ -76,7 +80,12 @@ export default {
             type: String,
             default: 'unknown', // Default to 'unknown' if not provided
         },
+        layout: {
+            type: String,
+            default: 'full', // Can be 'full' or 'compact'
+        },
     },
+    emits: ['sync-clicked', 'cover-clicked'],
     data() {
         return {
             isSelected: false,
@@ -86,8 +95,12 @@ export default {
         //console.log("needsSync value:", this.needsSync);
     },
     methods: {
-        sync() {
-            // Emit an event to the parent with the playlist title or ID
+        handleCoverClick() {
+            // Emit the 'cover-clicked' event with the playlist title (ID)
+            this.$emit('cover-clicked', this.title);
+        },
+        handleSyncClick() {
+            // Emit the 'sync-clicked' event
             this.$emit('sync-clicked', this.title);
         },
         toggleSelection() {
@@ -339,24 +352,6 @@ export default {
     padding: 8px;
 }
 
-.song-list-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.song-list-container::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0);
-    border-radius: 8px;
-}
-
-.song-list-container::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-}
-
-.song-list-container::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
 .song-list {
     list-style: none;
     padding: 0 0 16px 0;
@@ -371,5 +366,48 @@ export default {
 
 .song-item.not-downloaded {
     color: rgb(226, 56, 56);
+}
+
+/* === STYLES FOR COMPACT LAYOUT === */
+
+/* Target the component when its layout is compact */
+.playlist-entry[data-layout="compact"] {
+    /* Remove styles that don't fit a compact sidebar view */
+    background-image: none !important;
+    box-shadow: none;
+    height: auto;
+    max-width: 350px; /* Adjust to fit your left pane */
+    padding: 0;
+}
+
+/* Disable hover effects in compact mode */
+.playlist-entry[data-layout="compact"]:hover {
+    box-shadow: none;
+    filter: none;
+    transform: none;
+}
+
+/* Hide the main blur overlay */
+.playlist-entry[data-layout="compact"] .blur-overlay {
+    display: none;
+}
+
+/* This is the key part for centering */
+.playlist-entry[data-layout="compact"] .content-wrapper {
+    /* Center its children (the image container) horizontally */
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Hide the gradient overlay in compact mode */
+.playlist-entry[data-layout="compact"] .content-wrapper::before {
+    display: none;
+}
+
+/* Adjust the image size for the sidebar */
+.playlist-entry[data-layout="compact"] .playlist-image-container {
+    width: 250px;
+    height: 250px;
+    margin-right: 0; /* Remove the margin since it's now centered */
 }
 </style>

@@ -4,6 +4,7 @@ import LandingPage from '../pages/landing.vue'
 import OsLibs from '../pages/osLibs.vue'
 import Settings from '../pages/settings.vue'
 import Eula from '../pages/eula.vue'
+import PlaylistDetailPage from '../pages/playlist.vue'
 import { Transition } from 'vue'
 import { EventsOn } from '../../wailsjs/runtime/runtime'
 
@@ -17,6 +18,12 @@ const routes = [
         path: '/mainPage',
         name: 'mainPage',
         component: mainPage
+    },
+    {
+        path: '/playlist/:id',
+        name: 'PlaylistDetailPage',
+        component: PlaylistDetailPage,
+        props: true,
     },
     {
         path: '/OsLibs',

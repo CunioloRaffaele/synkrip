@@ -10,7 +10,9 @@
       <PlaylistCover :image="playlist.image" :title="playlist.dir_id"
         :songs="playlist.songs.map(song => ({ name: song.song_name, downloaded: song.is_downloaded === 1 }))"
         :needsSync="getPlaylistSyncStatus(playlist)" @sync-clicked="handleSync" 
-        :service="playlist.service" />
+        @cover-clicked="viewPlaylistDetails"
+        :service="playlist.service" 
+        layout="full"/>
     </div>
   </transition-group>
 </template>
@@ -44,6 +46,9 @@ export default {
     }
   },
   methods: {
+    viewPlaylistDetails(playlistId) {
+      this.$router.push({ name: 'PlaylistDetailPage', params: { id: playlistId } });
+    },
     handleFabToggle(isActive) {
       this.fabActive = isActive;
       console.log('FAB is now:', isActive ? 'active' : 'inactive');

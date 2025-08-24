@@ -3,7 +3,7 @@
         <div class="left-pane">
             <PlaylistCover v-if="playlist" :image="playlist.image" :title="playlist.dir_id"
                 :songs="playlist.songs.map(song => ({ name: song.song_name, downloaded: song.is_downloaded === 1 }))"
-                :needsSync="playlist.toBeSynced" @sync-clicked="handleSync" :service="playlist.service"
+                :needsSync="false" @sync-clicked="handleSync" :service="playlist.service"
                 class="sticky-cover" 
                 layout="compact"/>
             
@@ -29,8 +29,7 @@
         <div class="right-pane">
             <h2 v-if="playlist">{{ playlist.dir_id }}</h2>
             <div v-if="playlist" class="song-list">
-                <SongListItem v-for="song in playlist.songs" :key="song.song_id" :song-name="song.song_name"
-                    :is-downloaded="song.is_downloaded === 1" />
+                <SongListItem v-for="song in playlist.songs" :key="song.song_id" :song-name="song.song_name" :song-artist="song.song_artist_name" :is-downloaded="song.is_downloaded === 1" />
             </div>
             <div v-else>
                 <p>Loading playlist details...</p>

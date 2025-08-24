@@ -24,7 +24,7 @@ func (db *Database) AddPlaylistEntry(playlistName string, service string, playli
 
 	// Insert new entry into the database
 	query := `INSERT INTO playlists (DIR_ID, SERVICE, URL, IMAGE, ADD_DATE, LAST_MODIFIED) VALUES (?, ?, ?, ?, ?, ?)`
-	_, err = db.db.Exec(query, playlistName, service, playlistUrl, image, time.Now(), time.Time{})
+	_, err = db.db.Exec(query, playlistName, service, playlistUrl, image, time.Now(), time.Now())
 	if err != nil {
 		log.Println("Error inserting new playlist entry:", err)
 		return fmt.Errorf("error inserting new playlist entry: %w", err)

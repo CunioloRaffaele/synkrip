@@ -1,6 +1,10 @@
 <template>
   <div class="song-item" :class="{ downloaded: isDownloaded }">
-    <span class="song-name">{{ songName }}</span>
+    <div class="song-details">
+      <span class="song-artist">{{ songArtist }}</span>
+      <span class="separator">-</span>
+      <span class="song-name">{{ songName }}</span>
+    </div>
     <span class="status-indicator">
       {{ isDownloaded ? 'Downloaded' : 'Not Downloaded' }}
     </span>
@@ -12,6 +16,7 @@ export default {
   name: 'SongListItem',
   props: {
     songName: String,
+    songArtist: String,
     isDownloaded: Boolean,
   },
 };
@@ -22,13 +27,36 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
+  padding: 12px 15px;
   background-color: #2c2c2c;
-  border-radius: 5px;
+  border-radius: 8px;
+  gap: 16px;
+}
+
+.song-details {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.song-artist {
+  font-size: 14px;
+  color: #b3b3b3;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.separator {
+  color: #666;
 }
 
 .song-name {
   font-size: 16px;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status-indicator {
@@ -36,6 +64,7 @@ export default {
   padding: 3px 8px;
   border-radius: 10px;
   color: white;
+  flex-shrink: 0; /* Prevents indicator from shrinking */
 }
 
 .song-item.downloaded .status-indicator {

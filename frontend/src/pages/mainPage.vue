@@ -2,7 +2,7 @@
   <FloatingActionButton :color="fabColor" :initial-active="fabActive" @toggle="handleFabToggle" />
   <FloatingTextBox :is-visible="fabActive" title="Add New Playlist" placeholder="Enter public playlist url"
     submit-button-text="Add" @submit="handleSubmit" />
-  <transition-group name="playlist" tag="div">
+  <transition-group name="playlist" tag="div" class="playlist-container">
     <div v-for="(playlist, index) in playlists" :key="playlist.dir_id" class="playlist-item"
       :style="{ '--index': index }">
       <PlaylistCover :image="playlist.image" :title="playlist.dir_id"
@@ -80,6 +80,7 @@ export default {
       GetDB()
         .then((result) => {
           this.playlists = JSON.parse(result);
+          console.log("Fetched playlists:", this.playlists);
         })
         .catch((error) => {
           console.error('Error fetching playlists:', error);
@@ -96,8 +97,6 @@ export default {
   mounted() {
     this.fetchPlaylists();
     
-    // This now works correctly because 'needsRefresh' and 'resetRefreshFlag'
-    // are properly exposed from the setup() function.
     watch(() => this.needsRefresh, (newValue) => {
       if (newValue) {
         console.log("Download finished. Refreshing playlists...");
@@ -110,6 +109,10 @@ export default {
 </script>
 
 <style scoped>
+.playlist-container {
+    padding-bottom: 50px;
+}
+
 p {
   font-size: 20px;
 }
@@ -151,6 +154,5 @@ p {
     opacity: 1;
     transform: translateY(0);
   }
-}
-</style>
+}</style>
 

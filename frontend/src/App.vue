@@ -31,5 +31,12 @@ const transitionName = computed(() => {
 #app-container {
   height: 100vh;
   width: 100vw;
+
+  /* Add padding to the top to account for the transparent title bar */
+    /* --wails-draggable-height is a variable provided by Wails */
+    //padding-top: var(--wails-draggable-height, 36px);
+  
+    /* This is crucial: it ensures the padding is included in the total height, preventing a scrollbar */
+    //box-sizing: border-box;
 }
 </style>

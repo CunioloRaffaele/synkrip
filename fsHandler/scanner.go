@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 	"strings"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 // This function should scan the library and populate the FileSystem struct
@@ -64,17 +66,22 @@ func ScanLibrary(path string, fs *FileSystem) error {
 
 func GetSongsInFolder(fs *FileSystem, folderName string) ([]Song, error) {
 	var songs []Song
-    trimmedFolderName := strings.TrimSpace(folderName)
 
-    for _, playlist := range fs.Directories {
-        trimmedPlaylistName := strings.TrimSpace(playlist.PlaylistName)
+	normalizedFolderName := norm.NFC.String(strings.TrimSpace(folderName))
 
-        // Confronta le versioni "pulite" delle stringhe
-        if trimmedPlaylistName == trimmedFolderName {
-            log.Printf("Match found for '%s'. Found %d songs.\n", trimmedFolderName, len(playlist.File))
-            songs = playlist.File
-            break 
-        }
-    }
+	for _, playlist := range fs.Directories {
+		normalizedPlaylistName := norm.NFC.String(strings.TrimSpace(playlist.PlaylistName))
+
+		if normalizedPlaylistName == normalizedFolderName {
+			log.Printf("Match found for '%s'. Found %d songs.\n", normalizedFolderName, len(playlist.File))
+			songs = playlist.File
+			break
+		}
+	}
+
+	if len(songs) == 0 {
+		log.Printf("Warning: No match found in FileSystem struct for folder name '%s'.\n", normalizedFolderName)
+	}
+
 	return songs, nil
 }

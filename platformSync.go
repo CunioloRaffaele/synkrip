@@ -4,13 +4,56 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path/filepath"
+	"regexp"
 	"synkrip/api"
     _"synkrip/api/spotify" // import must be added to allow spotify to register with init()
 	"synkrip/api/youtube"
 	"synkrip/fsHandler"
+	"strings"
 
 	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+// normalizeString pulisce una stringa per il confronto.
+// Rimuove l'estensione, converte in minuscolo e rimuove i caratteri non alfanumerici.
+func normalizeString(s string) string {
+    // 1. Rimuovi l'estensione del file (es. ".m4a", ".mp3")
+    s = strings.TrimSuffix(s, filepath.Ext(s))
+
+    // 2. Converti tutto in minuscolo
+    s = strings.ToLower(s)
+
+    // 3. Rimuovi tutti i caratteri che non sono lettere o numeri
+    // Questo elimina spazi, trattini, parentesi, ecc.
+    reg := regexp.MustCompile("[^a-z0-9]+")
+    s = reg.ReplaceAllString(s, "")
+
+    return s
+}
+
+// compareSongNames confronta in modo flessibile un nome di file dal filesystem
+// con un nome di canzone e artista dal database.
+// Restituisce true se c'è una corrispondenza probabile.
+func compareSongNames(fsName, dbSongName, dbArtistName string) bool {
+    normFsName := normalizeString(fsName)
+    normDbSong := normalizeString(dbSongName)
+    normDbArtist := normalizeString(dbArtistName)
+
+    // Caso 1: Il nome del file normalizzato contiene sia la canzone che l'artista.
+    // Questo è il caso più affidabile (es. "artistmysong.m4a")
+    if strings.Contains(normFsName, normDbSong) && strings.Contains(normFsName, normDbArtist) {
+        return true
+    }
+
+    // Caso 2: Il nome del file normalizzato corrisponde solo alla canzone.
+    // Meno affidabile, ma utile se l'utente ha omesso l'artista.
+    if strings.Contains(normFsName, normDbSong) {
+        return true
+    }
+
+    return false
+}
 
 func (a *App) updatePlaylistDb() error {
     // Get all playlists from the database
@@ -22,6 +65,12 @@ func (a *App) updatePlaylistDb() error {
 
     // Iterate through each playlist
     for index, pl := range playlists {
+
+        if (pl.SERVICE == "unknownService") {
+            // this happens when user adds a new playlist folder which is not associated to a service
+            // SKIP
+            continue
+        }
 
         // display download status in the frontend
         a.setDownloadStatus("Db Update", true, index, len(playlists))
@@ -62,7 +111,7 @@ func (a *App) updatePlaylistDb() error {
             return err
         }
 
-        // Create a map of song IDs in the Spotify playlist
+        // Create a map of song IDs in the service playlist
         songIdsInService := make(map[string]bool)
         for _, item := range playlistData.Songs {
             songIdsInService[item.ID] = true
@@ -79,7 +128,16 @@ func (a *App) updatePlaylistDb() error {
                     a.setDownloadStatus("", false, 0, 0)
                     return err
                 }
-                err = fsHandler.RemoveSongFile(a.LibPath, pl.DIR_ID, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME + ".m4a")
+                response, _ := rt.MessageDialog(a.ctx, rt.MessageDialogOptions{
+                    Title:   "Song Removed from Service",
+                    Message: fmt.Sprintf("The song '%s' by '%s' was removed from the playlist '%s' on the service. Do you want to delete the local file?", song.SONG_NAME, song.SONG_ARTIST_NAME, pl.DIR_ID),
+                    Type:    "question",
+                    Buttons: []string{"Delete File", "Keep File"},
+                    DefaultButton: "Keep File",
+                })
+                if response == "Delete File" {
+                    err = fsHandler.RemoveSongFile(a.LibPath, pl.DIR_ID, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME + ".m4a")
+                }
                 if err != nil {
                     log.Printf("Error removing song '%s' from filesystem '%s': %v\n", song.SONG_NAME, pl.DIR_ID, err)
                     a.setDownloadStatus("", false, 0, 0)
@@ -110,6 +168,29 @@ func (a *App) updatePlaylistDb() error {
                 }
             }
         }
+
+        // Verify if the folder contains music that was imported externally and if db need to be updated with "downloaded = 1"
+        songsDbArr, err = a.CurrentDB.GetSongs(pl.DIR_ID)
+        if err != nil {
+            log.Println("Error getting songs for playlist:", pl.DIR_ID, err)
+            return err
+        }
+        songsFsArr, err := fsHandler.GetSongsInFolder(a.CurrentFileSystem, pl.DIR_ID)
+        if err != nil {
+            log.Println("Error getting songs from filesystem for playlist:", pl.DIR_ID, err)
+            return err
+        }
+        // now compare songsDbArr and songsFsArr to find discrepancies
+        // if there is some song in fsArr that are also in dbArr (as not downloaded) they need to be marked as Downloaded
+        for _, songFs := range songsFsArr {
+            for _, songDb := range songsDbArr {
+                if compareSongNames(songFs.Name, songDb.SONG_NAME, songDb.SONG_ARTIST_NAME) {
+                    log.Printf("Marking song '%s' as downloaded in playlist '%s'\n", songFs.Name, pl.DIR_ID)
+                    a.CurrentDB.MarkSongAsDownloaded(songDb.DIR_ID, songDb.SONG_YT_ID)
+                }
+            }
+        }
+
     }
 
     log.Println("Playlist synchronization completed.")

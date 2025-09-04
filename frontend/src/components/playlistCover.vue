@@ -1,5 +1,5 @@
 <template>
-    <div class="playlist-entry" :style="{ backgroundImage: `url(${image})` }" :class="{ 'needs-sync': needsSync }"
+    <div class="playlist-entry" :style="{ backgroundImage: `url(${displayImage})` }" :class="{ 'needs-sync': needsSync }"
         @contextmenu.prevent="toggleSelection" @click="handleCoverClick" :data-layout="layout">
         <!-- Frosted Glass Overlay -->
         <transition name="fade">
@@ -21,7 +21,7 @@
         <div class="sync-indicator" v-if="needsSync"></div>
         <div class="content-wrapper">
             <div class="playlist-image-container">
-                <img :src="image" alt="Playlist Cover" class="playlist-image" />
+                <img :src="displayImage" alt="Playlist Cover" class="playlist-image" />
                 <!-- Service image overlay -->
                 <img :src="getServiceIcon(service)" alt="Service Icon" class="service-icon" />
                 <!-- Add sync icon overlay -->
@@ -91,13 +91,21 @@ export default {
             isSelected: false,
         };
     },
+    computed: {
+        displayImage() {
+            if (this.image && this.image.trim() !== '') {
+                return this.image;
+            }
+            return new URL(`../assets/images/unknownService.gif`, import.meta.url).href;
+        }
+    },
     mounted() {
         //console.log("needsSync value:", this.needsSync);
     },
     methods: {
         handleCoverClick() {
             // Emit the 'cover-clicked' event with the playlist title (ID)
-            this.$emit('cover-clicked', this.title);
+            this.$emit('cover-clicked', this.title, this.service);
         },
         handleSyncClick() {
             // Emit the 'sync-clicked' event
@@ -108,7 +116,6 @@ export default {
             console.log("Selected:", this.isSelected);
         },
         getServiceIcon(service) {
-            // Dynamically resolve the service icon path
             return new URL(`../assets/images/${service}.png`, import.meta.url).href;
         },
         deletePlaylist() {
@@ -138,7 +145,7 @@ export default {
     margin: 16px auto;
     height: 180px;
     background-size: cover;
-    background-position: center;
+    background-position: bottom;
     transition: all 0.3s ease-in-out;
 }
 

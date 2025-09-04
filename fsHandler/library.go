@@ -41,7 +41,7 @@ func OpenLibrary(ctx context.Context, libPath *string, currentDB **dbHandler.Dat
         }
 
         fsErr := ScanLibrary(*libPath, currentFileSystem)
-        log.Println("Library scan complete. File system:", currentFileSystem)
+        //log.Println("Library scan complete. File system:", currentFileSystem)
         if fsErr != nil {
             rt.MessageDialog(ctx, rt.MessageDialogOptions{
                 Type:    rt.WarningDialog,
@@ -50,6 +50,37 @@ func OpenLibrary(ctx context.Context, libPath *string, currentDB **dbHandler.Dat
             })
             return fsErr
         }
+
+        Playlists, plErr := (*currentDB).GetPlaylist()
+        if plErr != nil {
+            rt.MessageDialog(ctx, rt.MessageDialogOptions{
+                Type:    rt.WarningDialog,
+                Title:   "Error",
+                Message: "Failed to get playlists from database:\n" + plErr.Error(),
+            })
+            return plErr
+        }
+
+        // verify if there are new folder in filesystem that are not in bd
+        for _, fsDir := range currentFileSystem.Directories {
+            found := false
+            for _, dbDir := range Playlists {
+                if fsDir.PlaylistName == dbDir.DIR_ID {
+                    found = true
+                    break
+                }
+            }
+            if !found {
+                log.Println("Found a new playlist folder which is not currently in sync with any service:", fsDir.PlaylistName)
+                rt.MessageDialog(ctx, rt.MessageDialogOptions{
+                    Type:    rt.WarningDialog,
+                    Title:   "New Playlist Found",
+                    Message: "Found a new playlist folder which is not currently in sync with any service: " + fsDir.PlaylistName,
+                })
+                (*currentDB).AddPlaylistEntry(fsDir.PlaylistName, "unknownService", "", "")
+            }
+        }
+
         rt.EventsEmit(ctx, "LibSelected")
         
     }

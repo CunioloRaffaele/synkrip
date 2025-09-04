@@ -3,6 +3,7 @@ package fsHandler
 import (
 	"log"
 	"os"
+	"strings"
 )
 
 // This function should scan the library and populate the FileSystem struct
@@ -16,6 +17,9 @@ func ScanLibrary(path string, fs *FileSystem) error {
 	// If you reassign the pointer inside the function 
 	// (e.g., fs = &FileSystem{}), it only updates the local copy 
 	// of the pointer, not the original pointer in the caller.
+
+	// Clear the previous directories
+	fs.Directories = nil
 
 	directories, err := os.ReadDir(path)
 	if err != nil {
@@ -56,4 +60,21 @@ func ScanLibrary(path string, fs *FileSystem) error {
 	}
 
 	return nil
+}
+
+func GetSongsInFolder(fs *FileSystem, folderName string) ([]Song, error) {
+	var songs []Song
+    trimmedFolderName := strings.TrimSpace(folderName)
+
+    for _, playlist := range fs.Directories {
+        trimmedPlaylistName := strings.TrimSpace(playlist.PlaylistName)
+
+        // Confronta le versioni "pulite" delle stringhe
+        if trimmedPlaylistName == trimmedFolderName {
+            log.Printf("Match found for '%s'. Found %d songs.\n", trimmedFolderName, len(playlist.File))
+            songs = playlist.File
+            break 
+        }
+    }
+	return songs, nil
 }

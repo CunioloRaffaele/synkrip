@@ -7,11 +7,11 @@
       :style="{ '--index': index }">
       <PlaylistCover :image="playlist.image" :title="playlist.dir_id"
         :songs="playlist.songs.map(song => ({ name: song.song_name, downloaded: song.is_downloaded === 1 }))"
-        :needsSync="getPlaylistSyncStatus(playlist)" @sync-clicked="handleSync" 
-        @cover-clicked="viewPlaylistDetails"
-        :service="playlist.service" 
-        layout="full"/>
+        :needsSync="getPlaylistSyncStatus(playlist)" @sync-clicked="handleSync" @cover-clicked="viewPlaylistDetails"
+        :service="playlist.service" layout="full" />
     </div>
+    <p v-if="playlists.length === 0"><br><br><br><br>No playlists found in this library.<br><br>Click the + button to
+      add one or import an external folder inside the library directory.</p>
   </transition-group>
 </template>
 
@@ -52,8 +52,12 @@ export default {
     }
   },
   methods: {
-    viewPlaylistDetails(playlistId) {
-      this.$router.push({ name: 'PlaylistDetailPage', params: { id: playlistId } });
+    viewPlaylistDetails(playlistId, service) {
+      if (service === 'unknownService') {
+        this.handleFabToggle(true);
+      } else {
+        this.$router.push({ name: 'PlaylistDetailPage', params: { id: playlistId } });
+      }
     },
     handleFabToggle(isActive) {
       this.fabActive = isActive;

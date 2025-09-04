@@ -36,6 +36,10 @@ func (s *YoutubeMusicService) FetchPlaylist(url string) (*api.UnifiedPlaylistFor
         })
     }
 
+	if (name == "") {
+		name = "Unknown YouTube Playlist"
+	}
+	
     return &api.UnifiedPlaylistFormat{
 		Name:    name,
         Songs:   songs,

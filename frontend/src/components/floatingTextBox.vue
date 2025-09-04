@@ -19,7 +19,7 @@
                         {{ option }}
                     </div>
                 </div>
-
+                <a>Youtube download supports playlist up to 100 songs<br>This will be fixed with the next version of SynkRip.</a>
                 <div class="input-container">
                     <input 
                         type="text" 

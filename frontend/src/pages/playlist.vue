@@ -16,6 +16,10 @@
                     <span class="date-label">Synced:</span>
                     <span class="date-value">{{ formattedLastModifiedDate }}</span>
                 </div>
+                <div class="date-item">
+                    <span class="date-label">Songs:</span>
+                    <span class="date-value">{{ playlist.songs.length }}</span>
+                </div>
             </div>
 
             <!-- Button Group -->
@@ -232,7 +236,7 @@ export default {
 }
 
 .date-value {
-  color: #666;
+  color: #b3b3b3; /* Changed from #666 for better readability */
 }
 
 .button-group {

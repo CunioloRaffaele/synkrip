@@ -79,7 +79,7 @@ func (a *App) GetDB() (string, error) {
 // AddPlaylistEntry
 func (a *App) AddEntry(url string, service string) error {
 	// TODO make this work in a goroutine
-	// TODO verify if the playlist already exists
+
 	a.setDownloadStatus("Adding Playlist", true, 1, 1)
 	musicService, err := api.GetMusicService(service)
 	if err != nil {
@@ -92,6 +92,18 @@ func (a *App) AddEntry(url string, service string) error {
 		log.Println("Error fetching playlist:", err)
 		a.setDownloadStatus("Adding Playlist", false, 1, 1)
 		return err
+	}
+
+	// Check if playlist already exists
+	for _, playlist := range a.CurrentFileSystem.Directories {
+		if playlist.PlaylistName == playlistData.Name {
+			log.Println("Folder with playlist name already exist. Modifying database for playlist: ", playlistData.Name)
+			rt.MessageDialog(a.ctx, rt.MessageDialogOptions{
+				Title:   "Playlist Exists",
+				Message: fmt.Sprintf("A folder with the name '%s' already exists locally. You want to modify the sync point for it? Remember the folder name must be the same as the synced playlist", playlistData.Name),
+				Type:    "info",
+			})
+		}
 	}
 
 	fsHandler.MkDir(a.LibPath, playlistData.Name)

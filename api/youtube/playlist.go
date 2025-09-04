@@ -58,7 +58,7 @@ func IngestYoutubePlaylist(id string) (name string , playlist playlistStruct, im
 	log.Println("YT Fetching playlist from:", url)
   	method := "POST"
  	payload := strings.NewReader(fmt.Sprintf(playlistPayload, id))
-	log.Println("Payload:", payload)
+	//log.Println("Payload:", payload)
 
 	client := &http.Client {
 	}

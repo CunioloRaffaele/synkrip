@@ -9,8 +9,8 @@ import (
 // AddPlaylistEntry adds a new entry to the playlist filed of the database
 func (db *Database) AddPlaylistEntry(playlistName string, service string, playlistUrl string, image string) error{
 	// Check if playlist already exists
-	checkQuery := `SELECT COUNT(*) FROM playlists WHERE URL = ?`
-	row := db.db.QueryRow(checkQuery, playlistUrl)
+	checkQuery := `SELECT COUNT(*) FROM playlists WHERE DIR_ID = ?`
+	row := db.db.QueryRow(checkQuery, playlistName)
 	var count int
 	err := row.Scan(&count)
 	if err != nil {
@@ -19,7 +19,25 @@ func (db *Database) AddPlaylistEntry(playlistName string, service string, playli
 	}
 	if count > 0 {
 		log.Println("Playlist already exists in the database")
-		return fmt.Errorf("playlist already exists in the database")
+		// verify that the playlistName is associated with "unknownService"
+		var existingService string
+		query := `SELECT SERVICE FROM playlists WHERE DIR_ID = ?`
+		row := db.db.QueryRow(query, playlistName)
+		err := row.Scan(&existingService)
+		if err != nil {
+			log.Println("Error checking existing playlist service:", err)
+			return fmt.Errorf("error checking existing playlist service: %w", err)
+		}
+		if existingService == "unknownService" {
+			log.Println("Updating existing playlist with new service information")
+			updateQuery := `UPDATE playlists SET SERVICE = ?, URL = ?, IMAGE = ?, LAST_MODIFIED = ? WHERE DIR_ID = ?`
+			_, err := db.db.Exec(updateQuery, service, playlistUrl, image, time.Now(), playlistName)
+			if err != nil {
+				log.Println("Error updating existing playlist:", err)
+				return fmt.Errorf("error updating existing playlist: %w", err)
+			}
+			return nil
+		}
 	}
 
 	// Insert new entry into the database

@@ -222,6 +222,10 @@ func (a *App) downloadContent(ctx context.Context, playlistName string) {
         }
         a.setDownloadStatus("Downloading...", true, index, len(songs))
         if song.IS_DOWNLOADED == 0 {
+            if song.SONG_YT_ID == "" {
+                log.Printf("Skipping song '%s' in playlist '%s' due to missing YouTube ID\n", song.SONG_NAME, playlistName)
+                continue
+            }
             log.Printf("Downloading song '%s' from playlist '%s'\n", song.SONG_NAME, playlistName)
             err := a.DownloadVideo(song.SONG_YT_ID, a.LibPath+"/"+playlistName, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME)
             if (err != nil) {

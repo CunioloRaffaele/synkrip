@@ -1,9 +1,13 @@
 <template>
-  <div class="song-item" :class="{ downloaded: isDownloaded }">
+  <div class="song-item" :class="{ downloaded: isDownloaded, duplicate: isDuplicate, 'has-error': hasError }">
     <div class="song-details">
       <span class="song-artist">{{ songArtist }}</span>
       <span class="separator">-</span>
       <span class="song-name">{{ songName }}</span>
+      <!-- Show ERROR badge if YT ID is missing -->
+      <span v-if="hasError" class="error-badge" title="Missing YouTube ID. Song cannot be downloaded.">ERROR</span>
+      <!-- Show DUPLICATE badge only if there is no error -->
+      <span v-else-if="isDuplicate" class="duplicate-badge">Duplicate</span>
     </div>
     <span class="status-indicator">
       {{ isDownloaded ? 'Downloaded' : 'Not Downloaded' }}
@@ -18,6 +22,14 @@ export default {
     songName: String,
     songArtist: String,
     isDownloaded: Boolean,
+    isDuplicate: Boolean,
+    songYtId: String,
+  },
+  computed: {
+    // Computed property to check for the error condition
+    hasError() {
+      return !this.songYtId || this.songYtId.trim() === '';
+    },
   },
 };
 </script>
@@ -59,6 +71,31 @@ export default {
   text-overflow: ellipsis;
 }
 
+.error-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background-color: #dc3545;
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-left: 10px;
+  flex-shrink: 0;
+  line-height: 1;
+  cursor: help; 
+}
+
+.duplicate-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #111;
+  background-color: #ffc107;
+  padding: 2px 5px;
+  border-radius: 4px;
+  margin-left: 10px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
 .status-indicator {
   font-size: 12px;
   padding: 3px 8px;
@@ -69,6 +106,12 @@ export default {
 
 .song-item.downloaded .status-indicator {
   background-color: #28a745;
+}
+
+/* De-emphasize the entire duplicate item */
+.song-item.duplicate {
+  opacity: 0.6;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .song-item:not(.downloaded) .status-indicator {

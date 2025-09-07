@@ -9,4 +9,5 @@ type Song struct {
         IS_DOWNLOADED    int    `json:"is_downloaded"`
         DIR_ID          string `json:"dir_id"`
         ADD_DATE         string `json:"add_date"`
+        Duplicate        int    `json:"duplicate"` // track if song is duplicate inside the same playlist
 }

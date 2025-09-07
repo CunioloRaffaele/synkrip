@@ -18,7 +18,7 @@
                 </div>
                 <div class="date-item">
                     <span class="date-label">Songs:</span>
-                    <span class="date-value">{{ playlist.songs.length }}</span>
+                    <span class="date-value">{{ playlist.songs.length }} ({{ playlist.duplicate_count }} duplicates)</span>
                 </div>
             </div>
 
@@ -33,7 +33,7 @@
         <div class="right-pane">
             <h2 v-if="playlist">{{ playlist.dir_id }}</h2>
             <div v-if="playlist" class="song-list">
-                <SongListItem v-for="song in playlist.songs" :key="song.song_id" :song-name="song.song_name" :song-artist="song.song_artist_name" :is-downloaded="song.is_downloaded === 1" />
+                <SongListItem v-for="song in playlist.songs" :key="song.song_id" :song-name="song.song_name" :song-artist="song.song_artist_name" :is-downloaded="song.is_downloaded === 1" :is-duplicate="song.duplicate === 1" :song-yt-id="song.song_yt_id" />
             </div>
             <div v-else>
                 <p>Loading playlist details...</p>

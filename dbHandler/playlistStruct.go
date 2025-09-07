@@ -8,5 +8,7 @@ type Playlist struct {
         ADD_DATE        string `json:"add_date"`
         LAST_MODIFIED   string `json:"last_modified"`
         Songs           []Song `json:"songs"`
-        ToBeSynced      bool   `json:"toBeSynced"`       
+        ToBeSynced      bool   `json:"toBeSynced"`
+        DuplicateCount int    `json:"duplicate_count"`
+        _songSet        map[string]struct{} `json:"-"` // Internal set to track duplicates
 }

@@ -1,6 +1,6 @@
 module synkrip
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.1
 
@@ -8,8 +8,10 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/tidwall/gjson v1.18.0
-	github.com/wailsapp/wails/v2 v2.10.1
+	github.com/wailsapp/wails/v2 v2.10.2
 )
+
+require github.com/gorilla/websocket v1.5.3 // indirect
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect
@@ -29,17 +31,17 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.51.0 // indirect
 	github.com/supabase-community/storage-go v0.7.0
-	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tkrajina/go-reflector v0.5.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/wailsapp/go-webview2 v1.0.22 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
-	golang.org/x/crypto v0.41.0 // indirect
+	golang.org/x/crypto v0.42.0 // indirect
 	golang.org/x/net v0.43.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/text v0.28.0
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/text v0.29.0
 )
 
 // replace github.com/wailsapp/wails/v2 v2.10.1 => /Users/raffaelecuniolo/go/pkg/mod

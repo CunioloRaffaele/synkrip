@@ -72,9 +72,9 @@ func GetSongsInFolder(fs *FileSystem, folderName string) ([]Song, error) {
 	normalizedFolderName := norm.NFC.String(strings.TrimSpace(folderName))
 
 	for _, playlist := range fs.Directories {
-		normalizedPlaylistName := norm.NFC.String(strings.TrimSpace(playlist.PlaylistName))
+		PlaylistName := strings.TrimSpace(playlist.PlaylistName)
 
-		if normalizedPlaylistName == normalizedFolderName {
+		if PlaylistName == normalizedFolderName {
 			log.Printf("Match found for '%s'. Found %d songs.\n", normalizedFolderName, len(playlist.File))
 			songs = playlist.File
 			break

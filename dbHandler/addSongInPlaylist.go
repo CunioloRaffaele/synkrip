@@ -4,13 +4,21 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 // AddPlaylistEntry adds a new entry to the playlist filed of the database
 func (db *Database) AddSongInPlaylist(playlistName string, songName string, albumName string, artistName string, songYTId string, songPlatformId string, isDownloaded bool) error{
+	
+	normPlaylistName := norm.NFC.String(playlistName)
+    normSongName := norm.NFC.String(songName)
+    normAlbumName := norm.NFC.String(albumName)
+    normArtistName := norm.NFC.String(artistName)
+	
 	// Check if playlist already exists
 	checkQuery := `SELECT COUNT(*) FROM playlists WHERE DIR_ID = ?`
-	row := db.db.QueryRow(checkQuery, playlistName)
+	row := db.db.QueryRow(checkQuery, normPlaylistName)
 	var count int
 	err := row.Scan(&count)
 	if err != nil {
@@ -33,7 +41,7 @@ func (db *Database) AddSongInPlaylist(playlistName string, songName string, albu
 	DIR_ID, 
 	ADD_DATE) 
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-	_, err = db.db.Exec(query, songName, albumName, artistName, songYTId, songPlatformId, isDownloaded, playlistName, date)
+	_, err = db.db.Exec(query, normSongName, normAlbumName, normArtistName, songYTId, songPlatformId, isDownloaded, normPlaylistName, date)
 	if err != nil {
 		log.Println("Error inserting new song entry:", err)
 		return fmt.Errorf("error inserting new song entry: %w", err)

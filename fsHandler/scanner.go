@@ -38,15 +38,17 @@ func ScanLibrary(path string, fs *FileSystem) error {
 
 	for _, folder := range directories {
 		//log.Println("-- Scanning Dir: ", folder.Name())
+		normalizedFolderName := norm.NFC.String(folder.Name())
 		fs.Directories = append(fs.Directories, Playlist{
-			PlaylistName: folder.Name(),
+			PlaylistName: normalizedFolderName,
 		})
 		files, _ := os.ReadDir(path + "/" + folder.Name())
 		for _, file := range files {
 			if !file.IsDir() {
 				//log.Println("---- File Found: ", file.Name())
+				normalizedFileName := norm.NFC.String(file.Name())
 				fs.Directories[len(fs.Directories)-1].File = append(fs.Directories[len(fs.Directories)-1].File, Song{
-					Name:         file.Name(),
+					Name:         normalizedFileName,
 				})
 			}
 		}

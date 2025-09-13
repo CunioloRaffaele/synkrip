@@ -115,6 +115,7 @@ export default {
 <style scoped>
 .playlist-container {
     padding-bottom: 50px;
+    overflow-x: hidden;
 }
 
 p {
@@ -158,5 +159,6 @@ p {
     opacity: 1;
     transform: translateY(0);
   }
-}</style>
+}
+</style>
 

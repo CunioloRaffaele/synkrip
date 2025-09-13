@@ -151,12 +151,18 @@ func (a *App) updatePlaylistDb() error {
         for _, item := range playlistData.Songs {
             if !songIdsInDB[item.ID] {
                 log.Printf("Adding new song '%s' to playlist '%s'\n", item.Name, pl.DIR_ID)
-                ytId, _ := youtube.GetYTid(item.Name + " " + item.Artists[0])
+                var artist string
+                if len(item.Artists) > 0 {
+                    artist = item.Artists[0]
+                } else {
+                    artist = "Unknown Artist"
+                }
+                ytId, _ := youtube.GetYTid(item.Name + " " + artist)
                 err := a.CurrentDB.AddSongInPlaylist(
                     pl.DIR_ID,
                     item.Name,
                     item.Album,
-                    item.Artists[0],
+                    artist,
                     ytId,
                     item.ID,
                     false, // IS_DOWNLOADED

@@ -233,7 +233,13 @@ func (a *App) downloadContent(ctx context.Context, playlistName string) {
                 continue
             }
             log.Printf("Downloading song '%s' from playlist '%s'\n", song.SONG_NAME, playlistName)
-            err := a.DownloadVideo(song.SONG_YT_ID, a.LibPath+"/"+playlistName, song.SONG_NAME + " - " + song.SONG_ARTIST_NAME)
+            songTitle := song.SONG_NAME + " - " + song.SONG_ARTIST_NAME;
+            if (a.Settings.DownloadEnumeration) {
+                // get song index with leading zeros
+                songIndex := fmt.Sprintf("%03d", index+1)
+                songTitle = "(" + songIndex + ")" + songTitle
+            }
+            err := a.DownloadVideo(song.SONG_YT_ID, a.LibPath+"/"+playlistName, songTitle)
             if (err != nil) {
                 log.Printf("Download aborted")
                 a.setDownloadStatus("", false, 0, 0)

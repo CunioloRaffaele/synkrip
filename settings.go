@@ -15,6 +15,7 @@ type Settings struct {
 	EulaAccepted      bool     `json:"eulaAccepted"`
 	TelemetryEnabled  bool    `json:"telemetryEnabled"`
 	RecentLibraries   []string `json:"recentLibraries"`
+	DownloadEnumeration bool      `json:"downloadEnumeration"` // whether to enumerate downloads (e.g., "(001)song.mp3")
 	UserIdentifier    string   `json:"userIdentifier"`
 	UpdateCheck       bool     `json:"updateCheck"`
 }
@@ -25,6 +26,7 @@ func NewDefaultSettings() *Settings {
 		EulaAccepted:    false,
 		TelemetryEnabled:true,
 		RecentLibraries: []string{},
+		DownloadEnumeration: false,
 		UserIdentifier:  userID,
 		UpdateCheck:     true,
 	}

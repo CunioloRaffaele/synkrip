@@ -47,6 +47,8 @@
 </template>
 
 <script>
+import { StopSync } from '../../wailsjs/go/main/App';
+
 export default {
   name: 'FloatingDownloadStatusAndCancel',
   props: {
@@ -86,6 +88,14 @@ export default {
     stopDownload() {
       // Emit an event to be caught by the parent component
       this.$emit('cancel-download');
+      // Handle locally the stopping logic
+      StopSync()
+        .then(() => {
+          console.log("Download cancelled by user.");
+        })
+        .catch((err) => {
+          console.error("Error cancelling download:", err);
+        });
     }
   }
 }
